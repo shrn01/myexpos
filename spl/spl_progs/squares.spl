@@ -1,6 +1,8 @@
 alias counter R0;
+alias square R1;
 counter = 1;
 while(counter <= 20) do
-    print counter*counter;
+    square = counter * counter
+    print square;
     counter = counter + 1;
 endwhile;
