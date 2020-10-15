@@ -1,4 +1,5 @@
 // Setting UPTR to SP
+breakpoint;
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 13] = SP;
 
 // setting SP to kernel stack
@@ -24,7 +25,7 @@ else
 	newPID = 0;
 endif;
 
-print "came here";
+print "timer";
 alias new_process_table R3;
 new_process_table = PROCESS_TABLE + newPID * 16;
 
@@ -48,6 +49,5 @@ endif;
 restore;
 
 SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
-print "pid";
-print [SYSTEM_STATUS_TABLE + 1];
+breakpoint;
 ireturn;

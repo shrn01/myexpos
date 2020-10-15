@@ -1,11 +1,11 @@
 int main()
 {
 	decl
-		int num,temp;
+		int temp,num;
 	enddecl
 	begin
-		num = 50;
-		while (num <= 100) do
+		num = 1;
+		while ( num <= 50 ) do
 			temp = exposcall ( "Write", -2, num );
 			num = num + 1;
 		endwhile;
