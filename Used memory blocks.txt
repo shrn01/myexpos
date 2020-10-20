@@ -1,0 +1,10 @@
+76, 77 - init Stack
+
+78, 79 - init heap
+
+80 - user area page for init kernel stack
+
+81 - idle process stack
+
+82 - user area page for idle kernel stack
+
