@@ -7,6 +7,7 @@ loadi(70,12);
 loadi(54,67);
 loadi(55,68);
 
+print "Starting OS";
 alias temp R0;
 temp = 0;
 while (temp<= 15) do
@@ -15,7 +16,6 @@ while (temp<= 15) do
 endwhile;
 
 SP = 82 * 512 - 1;
-print [54*512 + 2];
 call BOOT_MODULE;
 
 [PROCESS_TABLE + 1] = 0;

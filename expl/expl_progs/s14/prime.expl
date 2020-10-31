@@ -1,0 +1,36 @@
+decl
+int prime(int x);
+enddecl
+
+int prime(int x){
+	decl
+		int n,i;
+	enddecl
+	begin
+		n = 2;
+		i = 1;
+		while(n <= (x/2)) do
+			if ((x%n) == 0) then
+				i = 0;
+			endif;
+		n = n + 1;
+		endwhile;
+		return i;
+	end
+}
+
+
+int main(){
+decl
+	int a,b,temp;
+enddecl
+begin
+	a = 2;
+	while (a<101) do
+		if (prime(a) == 1) then
+			temp = exposcall("Write",-2,a);
+		endif;
+	endwhile;
+	return 0;
+end
+}
