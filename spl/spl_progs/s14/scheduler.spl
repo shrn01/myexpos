@@ -2,6 +2,8 @@ alias pid R0;
 pid = [SYSTEM_STATUS_TABLE + 1];
 
 multipush (BP);
+// print "in scheduler";
+// print pid;
 
 [PROCESS_TABLE + pid * 16 + 12] = SP % 512;
 [PROCESS_TABLE + pid * 16 + 14] = PTBR;

@@ -1,4 +1,4 @@
-
+// print "Starting OS";
 //loading idle
 loadi(69,11);
 loadi(70,12);
@@ -7,7 +7,6 @@ loadi(70,12);
 loadi(54,67);
 loadi(55,68);
 
-print "Starting OS";
 alias temp R0;
 temp = 0;
 while (temp<= 15) do

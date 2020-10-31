@@ -13,3 +13,9 @@
 84 - executable prog stack
 
 85 - executable prog kernel stack and user page area
+
+86 - prime program
+
+87 - prime user stack
+
+88 - prime kernal stack and user page area

@@ -30,6 +30,7 @@ begin
 		if (prime(a) == 1) then
 			temp = exposcall("Write",-2,a);
 		endif;
+		a = a + 1;
 	endwhile;
 	return 0;
 end
