@@ -8,3 +8,8 @@
 
 82 - user area page for idle kernel stack
 
+83 - executable prog
+
+84 - executable prog stack
+
+85 - executable prog kernel stack and user page area

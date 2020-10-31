@@ -1,0 +1,12 @@
+alias temp R0;
+breakpoint;
+temp = 1;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] + 4] = TERMINATED;
+while (temp <= 15) do
+	if ([PROCESS_TABLE + temp * 16 + 4] != TERMINATED) then
+		call MOD_5;
+		print "In INT10";
+	endif;
+endwhile;
+
+halt;

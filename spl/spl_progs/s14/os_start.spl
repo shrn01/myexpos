@@ -1,4 +1,3 @@
-breakpoint;
 
 //loading idle
 loadi(69,11);
@@ -7,6 +6,13 @@ loadi(70,12);
 //loading boot module (MOD 7)
 loadi(54,67);
 loadi(55,68);
+
+alias temp R0;
+temp = 0;
+while (temp<= 15) do
+	[PROCESS_TABLE + temp*16 + 4] = TERMINATED;
+	temp = temp + 1;
+endwhile;
 
 SP = 82 * 512 - 1;
 print [54*512 + 2];
