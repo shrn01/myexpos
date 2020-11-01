@@ -3,7 +3,7 @@ pid = [SYSTEM_STATUS_TABLE + 1];
 
 multipush (BP);
 // print "in scheduler";
-breakpoint;
+// breakpoint;
 // print pid;
 
 [PROCESS_TABLE + pid * 16 + 12] = SP % 512;
