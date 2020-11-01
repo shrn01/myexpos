@@ -1,0 +1,42 @@
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 5;
+
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1]*16 + 11]*512 - 1;
+
+alias phyPageNum R1;
+alias offset R2;
+alias fileDescriptorAddress R3;
+
+phyPageNum = [PTBR + 2*(userSP-4)/512];
+offset = (userSP - 4)%512;
+
+fileDescriptorAddress = phyPageNum*512 + offset;
+alias fileDescriptor R4;
+fileDescriptor = [fileDescriptorAddress];
+
+alias returnAddress R5;
+returnAddress = [PTBR + 2*(userSP-1)/512]*512 + (userSP-1)%512;
+
+alias word R6;
+
+
+if(fileDescriptor == -2) then
+	word = [[PTBR + 2*(userSP-3)/512]*512 + (userSP - 3)%512];
+	multipush(R0,R1,R2,R3,R4,R5,R6);
+	R1 = 3;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+	R3 = word;
+
+	call MOD_4;
+	multipop(R0,R1,R2,R3,R4,R5,R6);
+	[returnAddress] = 0;
+else
+	[returnAddress] = -1;
+endif;
+SP = userSP;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9] = 0;
+ireturn;
