@@ -1,5 +1,5 @@
 //Resource Manager Module
-
+// print "In Module 0";
 alias functionNum R1;
 alias currentPID R2;
 alias temp R3;
@@ -23,10 +23,11 @@ if (functionNum == 9) then
     endif;
     [TERMINAL_STATUS_TABLE] = 0;
     temp = 0;
-    while (temp <= 15) then
+    while (temp <= 15) do
         if ([PROCESS_TABLE + temp * 16 + 4] == WAIT_TERMINAL) then
             [PROCESS_TABLE + temp * 16 + 4] = READY;
         endif;
+    temp = temp + 1;
     endwhile;
     R0 = 0;
     return;

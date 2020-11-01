@@ -1,5 +1,8 @@
-load --os $HOME/myexpos/spl/spl_progs/s14/os_start.xsm
-load --int=timer $HOME/myexpos/spl/spl_progs/s14/timerint.xsm
-load --int=10 $HOME/myexpos/spl/spl_progs/s14/int10.xsm
-load --module 5 $HOME/myexpos/spl/spl_progs/s14/scheduler.xsm
-load --module 7 $HOME/myexpos/spl/spl_progs/s14/boot_mod.xsm
+load --os $HOME/myexpos/spl/spl_progs/s15/os_start.xsm
+load --int=timer $HOME/myexpos/spl/spl_progs/s15/timerint.xsm
+load --int=7 $HOME/myexpos/spl/spl_progs/s15/int7.xsm
+load --int=10 $HOME/myexpos/spl/spl_progs/s15/int10.xsm
+load --module 0 $HOME/myexpos/spl/spl_progs/s15/mod0.xsm
+load --module 4 $HOME/myexpos/spl/spl_progs/s15/mod4.xsm
+load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
+load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm

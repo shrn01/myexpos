@@ -32,6 +32,17 @@ loadi(17,30);
 loadi(50,63);
 loadi(51,64);
 
+//module 4 (Device Manager)
+loadi(40,53);
+loadi(41,54);
+
+//module 0 (Resource Manager)
+loadi(48,61);
+loadi(49,62);
+
+//terminal is free
+[TERMINAL_STATUS_TABLE] = 0;
+
 alias index R0;
 index = 4;
 while ( index < 16 ) do
