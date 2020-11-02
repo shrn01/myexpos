@@ -1,0 +1,25 @@
+// Setting UPTR to SP
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 13] = SP;
+
+// setting SP to kernel stack
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+backup;
+// print "In timer";
+
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID*16;
+
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+[process_table_entry + 4] = READY;
+
+call MOD_5;
+restore;
+
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+ireturn;

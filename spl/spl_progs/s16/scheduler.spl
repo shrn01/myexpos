@@ -1,0 +1,53 @@
+alias pid R0;
+pid = [SYSTEM_STATUS_TABLE + 1];
+
+multipush (BP);
+// print "in scheduler";
+// breakpoint;
+// print pid;
+
+[PROCESS_TABLE + pid * 16 + 12] = SP % 512;
+[PROCESS_TABLE + pid * 16 + 14] = PTBR;
+[PROCESS_TABLE + pid * 16 + 15] = PTLR;
+
+alias newpid R1;
+
+alias temp R2;
+
+temp = pid + 1;
+
+while (temp <= 15) do
+	if ([PROCESS_TABLE + temp * 16 + 4] == CREATED || [PROCESS_TABLE + temp * 16 + 4] == READY) then
+		newpid = temp;
+		break;
+	endif;
+	temp = temp + 1;
+endwhile;
+
+if (temp == 16) then 
+	newpid = 0;
+endif;
+
+if (pid == newpid) then
+	print "GOing to halt";
+	halt;
+endif;
+alias new_process_table R3;
+
+new_process_table = PROCESS_TABLE + newpid * 16;
+
+SP = [new_process_table + 11] * 512 + [new_process_table + 12];
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+[SYSTEM_STATUS_TABLE + 1] = newpid;
+
+if ([new_process_table + 4] == CREATED) then
+	SP = [new_process_table + 13];
+	[new_process_table + 4] = RUNNING;
+	[new_process_table + 9] = 0;
+	ireturn;
+endif;
+
+multipop (BP);
+[PROCESS_TABLE + newpid * 16 + 4] = RUNNING;
+return;

@@ -28,7 +28,7 @@ if (functionNum == 9) then
         if ([PROCESS_TABLE + temp * 16 + 4] == WAIT_TERMINAL) then
             [PROCESS_TABLE + temp * 16 + 4] = READY;
         endif;
-        temp = temp + 1;
+    temp = temp + 1;
     endwhile;
     R0 = 0;
     breakpoint;

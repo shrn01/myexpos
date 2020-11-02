@@ -20,22 +20,5 @@ if (functionNum == 3) then
     multipop(R1,R2,R3);
     return;
 else
-    if (functionNum == 4) then
-    //calling acquire Terminal
-    multipush(R1,R2,R3);
-    R1 = 8;
-    R2 = currentPID;
-    call MOD_0;
-    multipop(R1,R2,R3);
-    read;
-
-    [PROCESS_TABLE + (currentPID * 16) + 4] = WAIT_TERMINAL;
-    multipush(R1,R2,R3);
-    call MOD_5;
-    multipop(R1,R2,R3);
-
-    alias phyAddress R4;
-    phyAddress = [PTBR + 2 * R3/512] * 512 + R3%512;
-    [phyAddress] = [PROCESS_TABLE + (currentPID * 16) + 8];
     return;
 endif;
