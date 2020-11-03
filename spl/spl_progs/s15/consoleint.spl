@@ -1,4 +1,4 @@
-// print "In console Interrupt";
+print "In console Interrupt";
 breakpoint;
 
 alias currentPID R0;

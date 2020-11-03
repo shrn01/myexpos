@@ -21,6 +21,9 @@ POP R2
 POP R1
 JMP _L3
 _L4:
+MOV R16, "Aquiring Terminal"
+PORT P1, R16
+OUT
 MOV [29568], 1
 MOV R16, 29568
 ADD R16, 1
@@ -44,6 +47,9 @@ JMP _L8
 _L7:
 _L8:
 MOV [29568], 0
+MOV R16, "Releasing Terminal"
+PORT P1, R16
+OUT
 MOV R3, 0
 _L9:
 MOV R16, 15

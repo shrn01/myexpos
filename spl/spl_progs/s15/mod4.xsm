@@ -1,3 +1,6 @@
+MOV R16, "In Module 4"
+PORT P1, R16
+OUT
 BRKP
 MOV R16, 3
 EQ R16, R1

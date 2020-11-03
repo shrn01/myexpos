@@ -2,8 +2,8 @@ alias pid R0;
 pid = [SYSTEM_STATUS_TABLE + 1];
 
 multipush (BP);
-// print "in scheduler";
-// breakpoint;
+print "in scheduler";
+breakpoint;
 // print pid;
 
 [PROCESS_TABLE + pid * 16 + 12] = SP % 512;
@@ -28,10 +28,10 @@ if (temp == 16) then
 	newpid = 0;
 endif;
 
-if (pid == newpid) then
-	print "GOing to halt";
-	halt;
-endif;
+// if (pid == newpid) then
+// 	print "GOing to halt";
+// 	halt;
+// endif;
 alias new_process_table R3;
 
 new_process_table = PROCESS_TABLE + newpid * 16;

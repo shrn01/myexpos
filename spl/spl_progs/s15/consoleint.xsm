@@ -1,3 +1,6 @@
+MOV R16, "In console Interrupt"
+PORT P1, R16
+OUT
 BRKP
 MOV R16, 29560
 ADD R16, 1
