@@ -1,6 +1,7 @@
 //Read Interrupt
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9] = 7;
-
+// print "In INT 6";
+breakpoint;
 alias userSP R0;
 userSP = SP;
 
@@ -8,12 +9,12 @@ userSP = SP;
 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 
-alias fileDescriptorAddress R1;
-fileDescriptorAddress = [PTBR + 2 * (userSP-4)/512] * 512 + (userSP-4)%512;
+alias fileDescriptor R1;
+fileDescriptor = [[PTBR + 2 * (userSP-4)/512] * 512 + (userSP-4)%512];
 
 alias wordAddress R3;
-if ([fileDescriptorAddress] == -1) then
-    wordAddress = [PTBR + 2 * (userSP-3)/512] * 512 + (userSP-3)%512;
+if (fileDescriptor == -1) then
+    wordAddress = [[PTBR + 2 * (userSP-3)/512] * 512 + (userSP-3)%512];
     multipush(R0,R1);
     R1 = 4;
     R2 = [SYSTEM_STATUS_TABLE + 1];
