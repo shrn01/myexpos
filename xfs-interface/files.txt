@@ -8,3 +8,5 @@ load --module 0 $HOME/myexpos/spl/spl_progs/s15/mod0.xsm
 load --module 4 $HOME/myexpos/spl/spl_progs/s15/mod4.xsm
 load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
 load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm
+load --init $HOME/myexpos/expl/expl_progs/s16/bsort.xsm
+load --idle $HOME/myexpos/expl/expl_progs/s16/idle.xsm

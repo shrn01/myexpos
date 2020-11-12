@@ -1,6 +1,6 @@
 //Resource Manager Module
 // print "In Module 0";
-breakpoint;
+// breakpoint;
 alias functionNum R1;
 alias currentPID R2;
 alias temp R3;
@@ -12,10 +12,10 @@ if (functionNum == 8) then
         call MOD_5;
         multipop(R1,R2);
     endwhile;
-    print "Aquiring Terminal";
+    // print "Aquiring Terminal";
     [TERMINAL_STATUS_TABLE] = 1;
     [TERMINAL_STATUS_TABLE + 1] = currentPID;
-    breakpoint;
+    // breakpoint;
     return;
 endif;
 

@@ -52,7 +52,7 @@ loadi(51,64);
 [TERMINAL_STATUS_TABLE] = 0;
 
 alias index R0;
-index = 4;
+index = 2;
 while ( index < 16 ) do
 	[PROCESS_TABLE + ( 16 * index ) + 4] = TERMINATED;
 	index = index + 1;

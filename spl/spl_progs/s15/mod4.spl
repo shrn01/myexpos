@@ -1,6 +1,6 @@
 //Device Manager Module
-print "In Module 4";
-breakpoint;
+// print "In Module 4";
+// breakpoint;
 alias functionNum R1;
 alias currentPID R2;
 
@@ -28,6 +28,7 @@ else
         R2 = currentPID;
         call MOD_0;
         multipop(R1,R2,R3);
+        print "Enter ----->";
         read;
 
         [PROCESS_TABLE + (currentPID * 16) + 4] = WAIT_TERMINAL;
