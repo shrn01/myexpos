@@ -1,3 +1,5 @@
+// print "In INT 9";
+
 // setting mode
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 9;
 
@@ -140,9 +142,10 @@ restore;
 i = 0;
 
 while (i < 4)  do
-    if ([INODE_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 8 + i] != -1) then
-        loadi( [PTBR + 8 + i * 2],  [INODE_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 8 + i] ); //loading the page if its valid
+    if ([INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8 + i] != -1) then
+        loadi( [PTBR + 8 + i * 2],  [INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8 + i] ); //loading the page if its valid
     endif;
+    i = i + 1;
 endwhile;
 
 [[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];

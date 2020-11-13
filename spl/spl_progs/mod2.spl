@@ -1,28 +1,33 @@
 // memory manager
+// print "In MOD 2";
+// print R1;
+// print R2;
 
 alias funcNum R1;
 alias page R2;
 
 if (funcNum == 1) then
+    // print "in here";
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
     if ([SYSTEM_STATUS_TABLE + 2] == 0) then
         [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_MEM;
         backup;
         call MOD_5;
         restore;
-        [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] -1;
-        [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
-        R1 = 76;
-        while ( R1 < 127 ) do
-            if ([MEMORY_FREE_LIST + R1] == 0) then
-                break;
-            endif;
-            R1 = R1 + 1;
-        endwhile;
-        [MEMORY_FREE_LIST + R1] = 1;
-        R0 = R1;
-        return;
     endif;
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+    R1 = 76;
+    while ( R1 < 127 ) do
+        if ([MEMORY_FREE_LIST + R1] == 0) then
+            break;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+    [MEMORY_FREE_LIST + R1] = 1;
+    R0 = R1;
+    // print R0;
+    return;
 endif;
 
 if (funcNum == 2) then 

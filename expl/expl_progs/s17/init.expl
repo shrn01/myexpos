@@ -1,0 +1,12 @@
+int main(){
+decl
+	int a,temp;
+enddecl
+begin
+    temp = exposcall("Write",-2,"Enter Name");
+	temp = exposcall("Read",-1,a);
+	temp = exposcall("Exec",a);
+    temp = exposcall("Write",-2,"Not executable");
+	return 0;
+end
+}
