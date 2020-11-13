@@ -25,7 +25,7 @@ if (functionNum == 9) then
         return;
     endif;
     [TERMINAL_STATUS_TABLE] = 0;
-    print "Releasing Terminal";
+    // print "Releasing Terminal";
     temp = 0;
     while (temp <= 15) do
         if ([PROCESS_TABLE + temp * 16 + 4] == WAIT_TERMINAL) then

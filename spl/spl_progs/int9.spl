@@ -1,0 +1,35 @@
+// setting mode
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 9;
+
+
+alias userSP R0;
+userSP = SP;
+
+// switching stack
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+
+alias fileName R1;
+
+fileName = [[PTBR + 2 * (userSP - 4)/512] * 512 + (userSP - 4) % 512];  //pagenum * 512 + offset
+
+alias i R2;
+i = 0;
+
+while ( i < 60 ) do
+    if ([INODE_TABLE + i * 16 + 1] == fileName) then
+        break;
+    endif;
+    i = i + 1;
+endwhile;
+
+alias returnAddress R3;
+
+if ( i == 60) then
+    returnAddress = [PTBR + 2 * (userSP - 1)/512] * 512 + (userSP - 1) % 512;  //pagenum * 512 + offset
+    [returnAddress] = -1;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
