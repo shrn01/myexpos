@@ -2,6 +2,11 @@
 loadi(65,7);
 loadi(66,8);
 
+//loading inode table to memory
+loadi(59,3);
+loadi(60,4);
+
+
 // //loading executable
 // loadi(83,69);
 
@@ -32,17 +37,30 @@ loadi(15,28);
 loadi(16,29);
 loadi(17,30);
 
+//loading int9
+loadi(20,33);
+loadi(21,34);
+
 //int 10 i.e. exit
 loadi(22,35);
 loadi(23,36);
 
 //module 0 (Resource Manager)
+loadi(40,53);
+loadi(41,54);
+
+//module 1 (Process manager)
+loadi(42,55);
+loadi(43,56);
+
+//module 2 (Memory manager)
+loadi(44,57);
+loadi(45,58);
+
+//module 4 (Device Manager)
 loadi(48,61);
 loadi(49,62);
 
-//module 4 (Device Manager)
-loadi(40,53);
-loadi(41,54);
 
 //module 5 ( scheduler )
 loadi(50,63);
@@ -51,10 +69,33 @@ loadi(51,64);
 //terminal is free
 [TERMINAL_STATUS_TABLE] = 0;
 
+//setting wait mem count and mem free count
+[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+
 alias index R0;
 index = 2;
 while ( index < 16 ) do
 	[PROCESS_TABLE + ( 16 * index ) + 4] = TERMINATED;
+	index = index + 1;
+endwhile;
+
+index = 0;
+
+// used by expOS
+while ( index < 76) do
+	[MEMORY_FREE_LIST + index] = 1;
+	index = index + 1;
+endwhile;
+
+//used by IDLE and INIT
+while (index < 83) do
+	[MEMORY_FREE_LIST + index] = 1;
+	index = index + 1;
+endwhile;
+
+while (index < 128) do
+	[MEMORY_FREE_LIST + index] = 0;
 	index = index + 1;
 endwhile;
 

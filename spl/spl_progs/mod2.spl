@@ -1,0 +1,42 @@
+// memory manager
+
+alias funcNum R1;
+alias page R2;
+
+if (funcNum == 1) then
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+    if ([SYSTEM_STATUS_TABLE + 2] == 0) then
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_MEM;
+        backup;
+        call MOD_5;
+        restore;
+        [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] -1;
+        [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+        R1 = 76;
+        while ( R1 < 127 ) do
+            if ([MEMORY_FREE_LIST + R1] == 0) then
+                break;
+            endif;
+            R1 = R1 + 1;
+        endwhile;
+        [MEMORY_FREE_LIST + R1] = 1;
+        R0 = R1;
+        return;
+    endif;
+endif;
+
+if (funcNum == 2) then 
+    [MEMORY_FREE_LIST + R2] = 0;
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == WAIT_MEM) then
+            [PROCESS_TABLE + R1 * 16 + 4] = READY;
+        endif;
+        R1 = R1 + 1;
+    endwhile; 
+    return;
+endif;
+
+R0 = -1;
+return;
