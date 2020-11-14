@@ -1,5 +1,6 @@
 load --os $HOME/myexpos/spl/spl_progs/s15/os_start.xsm
 load --int=timer $HOME/myexpos/spl/spl_progs/s15/timerint.xsm
+load --int=disk $HOME/myexpos/spl/spl_progs/diskint.xsm
 load --int=console $HOME/myexpos/spl/spl_progs/s15/consoleint.xsm
 load --int=6 $HOME/myexpos/spl/spl_progs/s15/int6.xsm
 load --int=7 $HOME/myexpos/spl/spl_progs/s15/int7.xsm

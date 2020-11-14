@@ -29,10 +29,10 @@ if (temp == 16) then
 	newpid = 0;
 endif;
 
-if (pid == newpid) then
-	print "GOing to halt";
-	halt;
-endif;
+// if (pid == newpid) then
+// 	print "GOing to halt";
+// 	halt;
+// endif;
 
 breakpoint;
 alias new_process_table R3;
