@@ -27,7 +27,7 @@ begin
         endwhile;
         i = i + 1;
     endwhile;
-
+    temp = exposcall("Write",-2,"Printing sorted");
     i = 0;
     while(i<n) do
         temp = exposcall("Write",-2,a[i]);
