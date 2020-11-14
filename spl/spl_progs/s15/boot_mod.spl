@@ -76,6 +76,9 @@ loadi(51,64);
 [SYSTEM_STATUS_TABLE + 2] = 45;
 [SYSTEM_STATUS_TABLE + 3] = 0;
 
+//disk status 
+[DISK_STATUS_TABLE] = 0;
+
 alias index R0;
 index = 2;
 while ( index < 16 ) do
@@ -138,6 +141,15 @@ PTLR = 10;
 [PROCESS_TABLE + 16 + 14] = PAGE_TABLE_BASE + 20;
 [PROCESS_TABLE + 16 + 15] = 10;
 
+// per process resource table for init
+index = 81 * 512 - 16;
+alias total R1;
+R1 = 81 * 512;
+
+while (index < R1) do
+	[index] = -1;
+	index = index + 1;
+endwhile;
 
 //setting stack for init
 [76 * 512] = [65*512 + 1];
