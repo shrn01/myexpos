@@ -14,3 +14,4 @@ load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
 load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm
 load --init $HOME/myexpos/expl/expl_progs/s17/init.xsm
 load --idle $HOME/myexpos/expl/expl_progs/s16/idle.xsm
+load --exhandler $HOME/myexpos/spl/spl_progs/exception_handler.xsm

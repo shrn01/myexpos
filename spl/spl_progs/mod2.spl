@@ -1,10 +1,9 @@
-// memory manager
+// memory manager module
 // print "In MOD 2";
 // print R1;
 // print R2;
 
 alias funcNum R1;
-alias page R2;
 
 if (funcNum == 1) then
     // print "in here";
@@ -43,5 +42,53 @@ if (funcNum == 2) then
     return;
 endif;
 
+if (funcNum == 4) then
+    [DISK_FREE_LIST + R2] = [DISK_FREE_LIST + R2] - 1;
+endif;
+
+if (funcNum == 5) then
+    // print "Entered load code function";
+    breakpoint;
+    alias block R2;
+    alias pid R3;
+    alias index R4;
+    alias disk_map R5;
+    alias index_2 R6;
+    index = 0;
+
+    while (index < 10) do
+        disk_map = DISK_MAP_TABLE + index * 10;
+        index_2 = 4;
+        while (index_2 < 8) do
+            if (block == [disk_map + index_2]) then
+                R0 = [PAGE_TABLE_BASE + index * 20 + index_2 * 2];
+                [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
+                return;
+            endif;
+            index_2 = index_2 + 1;
+        endwhile;
+        index = index + 1;
+    endwhile;
+    breakpoint;
+    multipush(R2);
+    R1 = 1;
+    call MOD_2;
+
+    multipop(R2);
+    R1 = 2;
+    R4 = block;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = R0;
+    multipush(R3);
+
+    call MOD_4;
+    multipop(R3);
+    R0 = R3;
+    breakpoint;
+    // print "exiting load";
+    return;
+
+endif;
+    
 R0 = -1;
 return;

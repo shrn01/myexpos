@@ -35,36 +35,47 @@ if ( funcNum == 3 ) then
     return;
 endif;
 
-if ( funcNum == 4 ) then
-    multipush(R1,R2);
-    PTBR = PAGE_TABLE_BASE + 20 * [SYSTEM_STATUS_TABLE + 1];
+//free page table
+if (funcNum == 4) then
+    PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20;
+    alias disk_map R5 ;
+    disk_map = DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10;
 
     [PTBR + 0] = -1;
     [PTBR + 1] = "0000";
     [PTBR + 2] = -1;
     [PTBR + 3] = "0000";
 
-    R1 = 4;
+    alias logic_page R4;
+    logic_page = 2;
+    while (logic_page < 10) do
+        if ([PTBR + 2 * logic_page] != -1) then
+            multipush(R1,R2,R4);
+            R1 = 2;
+            R2 = [PTBR + logic_page * 2];
+            call MOD_2;
 
-    while( R1 < 20 ) do
-        if ( R1 % 2 == 0) then
-            if ([PTBR + R1] != -1) then
-                multipush(R1,R2);
+            multipop(R1,R2,R4);
+            [PTBR + logic_page * 2] = -1;
+            [PTBR + logic_page * 2 + 1] = "0000";
 
-                R2 = [PTBR + R1];
-                R1 = 2;
-                call MOD_2;
-                
-                multipop(R1,R2);
+            if (logic_page == 2 || logic_page == 3 || logic_page == 8 || logic_page == 9) then
+                if ([disk_map + logic_page] != -1) then
+                    multipush(R1,R2,R3,R4,R5);
+                    R1 = 4;
+                    R2 = [disk_map + logic_page];
+                    call MOD_2;
+                    [disk_map + logic_page] = -1;
+                    multipop(R1,R2,R3,R4,R5);
+                endif;
             endif;
-        else
-            [PTBR + R1] = "0000";
         endif;
-        R1 = R1 + 1;
+        logic_page = logic_page + 1;
     endwhile;
-    multipop(R1,R2);
     return;
 endif;
+
+
 
 R0 = -1;
 return;
