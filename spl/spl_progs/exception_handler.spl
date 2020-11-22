@@ -1,85 +1,103 @@
-// breakpoint;
+// Exception Handler Module
 
-//setting mode
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = -1;
+// EC => Cause ; 
+// EIP => Instruction causing the error ; 
+// EPN => Page causing the error ; 
+// EMA => Memory address in which Illegal memory access is done ;
 
+// Page fault:             EC => 0
+// Illegal instructions:   EC => 1
+// Illegal Memory Access:  EC => 2
+// Arithmetic exception:   EC => 3
+
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = -1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
-// multipush(EIP);
+
 backup;
-// print EIP;
-// print SP;
-// print "in exception handler";
+multipush(EIP);
 
-PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20;
-
-if (EC != 0 || ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] == PTLR * 512 - 1)) then
-    print "Some error has occured, so exiting";
-    print "EC";
+if (EC != 0) then
     if (EC == 1) then
-        print "Illegal Instruction";
+        print "ILLEGAL ---";
+        print "INSTRUCTION";
+        print EIP;
+        print " ";
         breakpoint;
     endif;
     if (EC == 2) then
-        print "Illegal Mem Access";
+        print "ILLEGAL ---";
+        print "MEM ACCESS";
+        print EMA;
+        print " ";
         breakpoint;
     endif;
     if (EC == 3) then
-        print "Arithmetic error";
+        print "DIVIDE BY 0";
+        print " ";
         breakpoint;
     endif;
+
     R1 = 3;
     R2 = [SYSTEM_STATUS_TABLE + 1];
     call MOD_1;
     call MOD_5;
-    restore;
-    return;
+endif;
+
+if (SP == 10 * 512 - 1) then
+    print "STACK IS";
+    print "--FULL--";
+    breakpoint;
+    R1 = 3;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_1;
+    call MOD_5;
 endif;
 
 if (EC == 0) then
+    print "PAGE FAULT";
+    print EPN;
+    print "FIXING IT";
+    print " ";
+    breakpoint;
+    alias block R5;
+    block = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + EPN];
     if (EPN == 4 || EPN == 5 || EPN == 6 || EPN == 7) then
+        //need to Load the code Page
+        multipush(EPN);
         R1 = 5;
-        R2 = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + EPN];
-        print EPN;
-        print R2;
-        R3 = [SYSTEM_STATUS_TABLE + 1];
-        backup;
-
+        R2 = block;
         call MOD_2;
-        [PTBR + EPN * 2] = R0;
-        [PTBR + EPN * 2 + 1] = "1100";
-        restore;
-        
+        multipop(EPN);
+        // print R0;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2] = R0;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 1] = "1100"; 
     endif;
 
     if (EPN == 2) then
-        backup;
         R1 = 1;
         call MOD_2;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 4] = R0;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 5] = "1110";
 
-        [PTBR + 4] = R0;
-        [PTBR + 5] = "1110";
-        
         R1 = 1;
         call MOD_2;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 6] = R0;
+        [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 7] = "1110";
 
-        [PTBR + 6] = R0;
-        [PTBR + 7] = "1110";
-        restore;
     endif;
+
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    multipop(EIP);
     restore;
-    // print EIP;
-    // print SP;
-    // multipop(EIP);
+
     multipush(R1,R2);
     R1 = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] + 1;
-    R2 = [PTBR + 2 * (R1 / 512)] * 512 + R1 % 512;
+    R2 = [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * (R1 / 512)] * 512 + R1 % 512;
     [R2] = EIP;
-    // print R2;
-    // print EIP;
     multipop(R1,R2);
     SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] + 1;
-    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = 0;
-    breakpoint;
+
     ireturn;
 endif;

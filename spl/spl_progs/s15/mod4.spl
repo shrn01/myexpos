@@ -1,9 +1,13 @@
 //Device Manager Module
-// print "In Module 4";
+// print "DEVICE MANAGER";
+// print " ";
 // breakpoint;
 alias functionNum R1;
 alias currentPID R2;
 
+
+
+// Disk Load	
 if (functionNum == 2) then
     multipush(R1,R2,R3,R4);
     R1 = 3;
@@ -24,6 +28,9 @@ if (functionNum == 2) then
     return;
 endif;
 
+
+
+// Terminal Write	
 if (functionNum == 3) then
     // calling acquire Terminal
     multipush(R1,R2,R3);
@@ -42,6 +49,9 @@ if (functionNum == 3) then
     return;
 endif;
 
+
+
+// Terminal Read	
 if (functionNum == 4) then
     //calling acquire Terminal
     multipush(R1,R2,R3);
@@ -53,12 +63,13 @@ if (functionNum == 4) then
     read;
 
     [PROCESS_TABLE + (currentPID * 16) + 4] = WAIT_TERMINAL;
-    multipush(R1,R2,R3);
+    backup;
     call MOD_5;
-    multipop(R1,R2,R3);
-
+    restore;
+    multipush(R4);
     alias phyAddress R4;
-    phyAddress = [PTBR + 2 * R3/512] * 512 + R3%512;
+    phyAddress = [PTBR + 2 * R3 / 512] * 512 + R3 % 512;
     [phyAddress] = [PROCESS_TABLE + (currentPID * 16) + 8];
+    multipop(R4);
     return;
 endif;

@@ -4,14 +4,18 @@ enddecl
 
 int main(){
 decl
-	int i,j,n,temp;
+	int i,j,k,n,temp;
 enddecl
 begin
     temp = exposcall("Read",-1,n);
     i = 0;
     while(i < n) do
+        k = n - i;
+        temp = exposcall("Write",-2,"LEFT");
+        temp = exposcall("Write",-2,k);
         temp = exposcall("Read",-1,a[i]);
         i = i + 1;
+        breakpoint;
     endwhile;
     
     i = 0;

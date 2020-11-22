@@ -1,5 +1,4 @@
-print "In INT 9";
-
+// print "EXEC CALL";
 // setting mode
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 9;
 
@@ -7,7 +6,7 @@ print "In INT 9";
 alias userSP R7;
 userSP = SP;
 
-// switching stack
+
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 
@@ -47,17 +46,27 @@ call MOD_1;
 
 restore;
 
+
+
 //reducing the number of free pages
 [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1; 
 
 //updating memory free list
 [MEMORY_FREE_LIST + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11]] = [MEMORY_FREE_LIST + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11]] + 1;
 
+
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+
+
 
 // starting the new process with old pid
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = RUNNING;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] = i;
+
+
+
+
+
 
 PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20;
 PTLR = 10;
@@ -107,19 +116,19 @@ call MOD_2;
 
 restore;
 
-print "1 and here";
-// if ([INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8] != -1) then
-//     backup; 
-//     R1 = 5;
-//     R2 = [INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8];
-//     R3 = [SYSTEM_STATUS_TABLE + 1];
-//     call MOD_2;
-//     [PTBR + 8] = R0;
-//     [PTBR + 9] = "0100";
-//     restore;
-// else
-//     print "Code page Not Found";
-// endif;
+// print "1 and here";
+if ([INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8] != -1) then
+    backup; 
+    R1 = 5;
+    R2 = [INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 8];
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_2;
+    [PTBR + 8] = R0;
+    [PTBR + 9] = "0100";
+    restore;
+else
+    print "Code page Not Found";
+endif;
 
 multipush(R1);
 R1 = 0;
@@ -137,7 +146,8 @@ multipop(R1);
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + 6] = [INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 10];
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + 7] = [INODE_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] * 16 + 11];
 
-print "ended successfully";
+// print "ended successfully";
+print "PTBR";
 print PTBR;
 [[PTBR + 16] * 512] = 2058;
 

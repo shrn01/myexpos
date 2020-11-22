@@ -1,12 +1,15 @@
 // memory manager module
-// print "In MOD 2";
+// print "IN MEMORY MANAGER";
+// print " ";
+// print R1;
 // print R1;
 // print R2;
 
 alias funcNum R1;
 
+
+// Get Free Page	
 if (funcNum == 1) then
-    // print "in here";
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
     if ([SYSTEM_STATUS_TABLE + 2] == 0) then
         [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_MEM;
@@ -29,8 +32,11 @@ if (funcNum == 1) then
     return;
 endif;
 
+
+// Release Page	
 if (funcNum == 2) then 
-    [MEMORY_FREE_LIST + R2] = 0;
+    multipush(R1);
+    [MEMORY_FREE_LIST + R2] = [MEMORY_FREE_LIST + R2] - 1;
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
     R1 = 0;
     while (R1 < 16) do
@@ -39,13 +45,19 @@ if (funcNum == 2) then
         endif;
         R1 = R1 + 1;
     endwhile; 
+    multipop(R1);
     return;
 endif;
 
+
+// Release Block	
 if (funcNum == 4) then
     [DISK_FREE_LIST + R2] = [DISK_FREE_LIST + R2] - 1;
 endif;
 
+
+
+// Get Code Page	
 if (funcNum == 5) then
     // print "Entered load code function";
     breakpoint;
@@ -62,8 +74,10 @@ if (funcNum == 5) then
         while (index_2 < 8) do
             if (block == [disk_map + index_2]) then
                 R0 = [PAGE_TABLE_BASE + index * 20 + index_2 * 2];
-                [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
-                return;
+                if (R0 != -1) then
+                    [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
+                    return;
+                endif;
             endif;
             index_2 = index_2 + 1;
         endwhile;
@@ -73,7 +87,6 @@ if (funcNum == 5) then
     multipush(R2);
     R1 = 1;
     call MOD_2;
-
     multipop(R2);
     R1 = 2;
     R4 = block;
@@ -85,7 +98,6 @@ if (funcNum == 5) then
     multipop(R3);
     R0 = R3;
     breakpoint;
-    // print "exiting load";
     return;
 
 endif;
