@@ -1,42 +1,40 @@
 decl
-    int a[100];
+	int a[100];
 enddecl
 
 int main(){
 decl
-	int i,j,k,n,temp;
+	int i,j,n,temp;
 enddecl
 begin
-    temp = exposcall("Read",-1,n);
-    i = 0;
-    while(i < n) do
-        k = n - i;
-        temp = exposcall("Write",-2,"LEFT");
-        temp = exposcall("Write",-2,k);
-        temp = exposcall("Read",-1,a[i]);
-        i = i + 1;
-        breakpoint;
-    endwhile;
-    
-    i = 0;
-    while(i<n) do
-        j = 0;
-        while(j<(n-i-1)) do
-            if(a[j]>a[j+1]) then
-                temp = a[j];
-                a[j] = a[j+1];
-                a[j+1] = temp;
-            endif;
-            j = j + 1;
-        endwhile;
-        i = i + 1;
-    endwhile;
-    temp = exposcall("Write",-2,"Printing sorted");
-    i = 0;
-    while(i<n) do
-        temp = exposcall("Write",-2,a[i]);
-        i = i + 1;
-    endwhile;
+	temp = exposcall("Read",-1,n);
+	temp = exposcall("Write",-2,"E N T E R");
+	i = 0;
+	while (i < n) do
+		temp = exposcall("Read",-1,a[i]);
+		i = i + 1;
+	endwhile;
+	
+	i = 0;
+	while (i < n) do
+		j = 0;
+		while (j < (n - i - 1)) do
+			if (a[j] > a[j + 1]) then
+				temp = a[j];
+				a[j] = a[j + 1];
+				a[j + 1] = temp;
+			endif;
+			j = j + 1;
+		endwhile;
+		i = i + 1;
+	endwhile;
+	temp = exposcall("Write",-2, "S O R T E D");
+	i = 0;
+	while (i < n) do
+		temp = exposcall("Write",-2,a[i]);
+		i = i + 1;
+	endwhile;
 	return 0;
 end
 }
+
