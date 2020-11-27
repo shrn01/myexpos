@@ -1,0 +1,45 @@
+type
+	List
+	{
+		int data;
+		List next;
+	}
+endtype
+
+int main(){
+decl
+	int temp,n,i,input;
+	List head, node1, node2;
+enddecl
+begin
+	temp = exposcall("Write",-2,"S I Z E");
+	temp = exposcall("Read",-1,n);
+	i = 0;
+	temp = initialize();
+	head = null;
+	temp = exposcall("Write", -2 , "I N P U T S");
+	while (i < n) do
+		temp = exposcall("Read" , -1 , input);
+		node1 = alloc();
+		node1.data = input;
+		if (head == null) then
+			head = node1;
+			node2 = node1;
+			node2.next = null;
+		else
+			node2.next = node1;
+			node2 = node2.next;
+			node2.next = null;
+		endif;
+		i = i + 1;
+	endwhile;
+	temp = exposcall("Write", -2, "P R I N T I N G");
+	node1 = head;
+	while (node1 != null) do
+		i = node1.data;
+		temp = exposcall("Write", -2, i);
+		node1 = node1.next;
+	endwhile;
+	return 0;
+end
+}
