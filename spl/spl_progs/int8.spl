@@ -1,0 +1,184 @@
+// Fork System Call
+
+
+
+// setting mode
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 8;
+
+
+// save user stack and switch to kernel stack
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+// print [[PTBR + 2 * (SP) / 512] * 512 + (SP) % 512];
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+
+alias currentPID R5;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+alias childPID R6;
+R1 = 1;
+call MOD_1;
+
+childPID = R0;
+PTBR = PAGE_TABLE_BASE + currentPID * 20;
+
+if (childPID == -1) then
+    multipush(R1,R2);
+    R1 = [PROCESS_TABLE + currentPID * 16 + 13];
+    R2 = [PTBR + (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
+    [R2] = -1;
+    multipop(R1,R2);
+    SP = [PROCESS_TABLE + currentPID * 16 + 13];
+    ireturn;
+endif;
+
+if ([PTBR + 4] == -1) then
+    backup;
+
+    multipush(PTBR);
+    R1 = 1;
+    call MOD_2;
+    multipop(PTBR);
+
+    [PTBR + 4] = R0;
+    [PTBR + 5] = "0110";
+
+    multipush(PTBR);
+    R1 = 1;
+    call MOD_2;
+    multipop(PTBR);
+
+    [PTBR + 6] = R0;
+    [PTBR + 7] = "0110";
+
+    restore;
+endif;
+multipush(R4);
+R4 = 8;
+while (R4 < 16) do
+    if ([PTBR + R4] == -1) then
+        if ([DISK_MAP_TABLE + currentPID * 10 + R4 / 2] != -1) then  
+            backup;
+            R1 = 5;
+            R2 = [DISK_MAP_TABLE + currentPID * 10 + R4 / 2];
+            call MOD_2;
+            [PAGE_TABLE_BASE + currentPID * 20 + R4] = R0;
+            [PAGE_TABLE_BASE + currentPID * 20 + R4 + 1] = "0100"; 
+            restore;
+        endif;
+    endif;
+    R4 = R4 + 2;
+endwhile;
+multipop(R4);
+
+// setting stack for the child
+
+alias ptbr_child R7;
+ptbr_child = PAGE_TABLE_BASE + childPID * 20;
+
+R1 = 1;
+call MOD_2;
+
+[ptbr_child + 16] = R0;
+[ptbr_child + 17] = "0110";
+
+R1 = 1;
+call MOD_2;
+
+[ptbr_child + 18] = R0;
+[ptbr_child + 19] = "0110";
+
+R1 = 1;
+call MOD_2;
+
+[PROCESS_TABLE + childPID * 16 + 11] = R0;
+
+
+// setting process table for the LITTLE CHILD
+
+multipush(R3);
+alias Child_Process_Table R3;
+Child_Process_Table = PROCESS_TABLE + childPID * 16;
+
+[Child_Process_Table + 0] = 0;
+[Child_Process_Table + 1] = childPID;
+[Child_Process_Table + 2] = currentPID;
+[Child_Process_Table + 3] = [PROCESS_TABLE + currentPID * 16 + 3];
+[Child_Process_Table + 4] = CREATED;
+[Child_Process_Table + 5] = [PROCESS_TABLE + currentPID * 16 + 5];
+[Child_Process_Table + 6] = [PROCESS_TABLE + currentPID * 16 + 6];
+[Child_Process_Table + 7] = [PROCESS_TABLE + currentPID * 16 + 7];
+[Child_Process_Table + 8] = 0;
+[Child_Process_Table + 9] = 0;
+[Child_Process_Table + 10] = [PROCESS_TABLE + currentPID * 16 + 10];
+[Child_Process_Table + 12] = 0;
+[Child_Process_Table + 13] = [PROCESS_TABLE + currentPID * 16 + 13];
+[Child_Process_Table + 14] = PAGE_TABLE_BASE + childPID * 20;
+[Child_Process_Table + 15] = 10;
+
+
+// C O P Y   P E R   P R O C E S S   R E S O U R C E   T A B L E   H E R E
+// I N   F U R T H E R   S T A G E S
+
+
+// Copy Disk Map Table
+
+multipush(R1);
+R1 = 0;
+while (R1 < 10) do
+    [DISK_MAP_TABLE + 10 * childPID + R1] = [DISK_MAP_TABLE + 10 * currentPID + R1];
+    R1 = R1 + 1;
+endwhile;
+multipop(R1);
+
+
+[ptbr_child + 0] = 63;
+[ptbr_child + 1] = "0100";
+[ptbr_child + 2] = 64;
+[ptbr_child + 3] = "0100";
+
+
+multipush(R1);
+R1 = 4;
+while (R1 < 16) do
+    [ptbr_child + R1] = [PTBR + R1];
+
+    if (R1 % 2 == 0) then
+        if ([PTBR + R1] != -1) then
+            [MEMORY_FREE_LIST + [PTBR + R1]] = [MEMORY_FREE_LIST + [PTBR + R1]] + 1;
+        endif;
+    endif;
+    R1 = R1 + 1;
+endwhile;
+
+R1 = 0;
+while (R1 < 512) do
+    [[ptbr_child + 16] * 512 + R1] = [[PTBR + 16] * 512 + R1];
+    R1 = R1 + 1;
+endwhile;
+
+R1 = 0;
+while (R1 < 512) do
+    [[ptbr_child + 18] * 512 + R1] = [[PTBR + 18] * 512 + R1];
+    R1 = R1 + 1;
+endwhile;
+multipop(R1);
+
+[[PROCESS_TABLE + childPID * 16 + 11] * 512] = BP;
+
+multipush(R1,R2);
+R1 = [PROCESS_TABLE + currentPID * 16 + 13];
+R2 = [PTBR + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
+[R2] = childPID;
+R2 = [ptbr_child + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
+[R2] = 0;
+multipop(R1,R2);
+
+
+[PROCESS_TABLE + currentPID * 16 + 9] = 0;
+
+SP = [PROCESS_TABLE + currentPID * 16 + 13];
+
+
+breakpoint;
+ireturn;

@@ -40,7 +40,11 @@ loadi(15,28);
 loadi(16,29);
 loadi(17,30);
 
-//loading int9
+// int 8 i.e fork Call
+loadi(18,31);
+loadi(19,32);
+
+//loading int9 i.e Exec Call
 loadi(20,33);
 loadi(21,34);
 

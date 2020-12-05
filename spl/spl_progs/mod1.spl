@@ -6,6 +6,27 @@
 alias funcNum R1;
 alias pid R2;
 
+// Get PID
+if (funcNum == 1) then
+    multipush(R1);
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == TERMINATED) then
+            R0 = R1;
+            [PROCESS_TABLE + R1 * 16 + 1] = R1;
+            [PROCESS_TABLE + R1 * 16 + 4] = ALLOCATED;
+            [PROCESS_TABLE + R1 * 16 + 14] = PAGE_TABLE_BASE + R1 * 20;
+            [PROCESS_TABLE + R1 * 16 + 15] = 10;
+            multipop(R1);
+            return;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+    multipop(R1);
+    R0 = -1;
+    return;
+endif;
+
 
 
 // Free User Area Page

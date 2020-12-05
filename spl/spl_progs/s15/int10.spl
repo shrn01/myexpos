@@ -1,12 +1,34 @@
 // print "in int10";
-alias temp R0;
-breakpoint;
-temp = 1;
+
+
+
+// setting mode
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 10;
+
+
+// switching to kernel stack
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+
+
+
+multipush(R0,R1,R2);
+R1 = 3;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call MOD_1;
+multipop(R0,R1,R2);
+
+
+
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = TERMINATED;
-while (temp <= 15) do
-	if ([PROCESS_TABLE + temp * 16 + 4] != TERMINATED) then
+breakpoint;
+
+
+R0 = 1;
+while (R0 <= 15) do
+	if ([PROCESS_TABLE + R0 * 16 + 4] != TERMINATED) then
 		call MOD_5;
 	endif;
-	temp = temp + 1;
+	R0 = R0 + 1;
 endwhile;
 halt;
