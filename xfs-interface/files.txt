@@ -13,6 +13,6 @@ load --module 2 $HOME/myexpos/spl/spl_progs/mod2.xsm
 load --module 4 $HOME/myexpos/spl/spl_progs/s15/mod4.xsm
 load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
 load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm
-load --init $HOME/myexpos/expl/expl_progs/s20/forker.xsm
+load --init $HOME/myexpos/expl/expl_progs/s20/linkshared.xsm
 load --idle $HOME/myexpos/expl/expl_progs/s16/idle.xsm
 load --exhandler $HOME/myexpos/spl/spl_progs/exception_handler.xsm
