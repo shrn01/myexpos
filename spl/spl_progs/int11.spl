@@ -1,0 +1,95 @@
+// INTERRUPT 11
+
+
+
+// ---> Stack Pointer  [       IP + 1       ]
+//                     [     RETURN VALUE   ]
+//                     [     ARGUMENT 3     ]
+//                     [     ARGUMENT 2     ]
+//                     [     ARGUMENT 1     ]
+//                     [ SYSTEM CALL NUMBER ]
+
+
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+PTBR = PAGE_TABLE_BASE + 20 * [SYSTEM_STATUS_TABLE + 1];
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = system_call_number;
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+
+
+// get_pid
+if (system_call_number == 11) then
+    [RETURN] = [SYSTEM_STATUS_TABLE + 1];
+    SP = userSP;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    ireturn;
+endif;
+
+
+// get_ppid
+if (system_call_number == 12) then
+    [RETURN] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 2];
+    SP = userSP;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    ireturn;
+endif;
+
+
+// wait
+if (system_call_number == 13) then
+    alias PID R3;
+    PID = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+    if (PID == [SYSTEM_STATUS_TABLE + 1] || [PROCESS_TABLE + PID * 16 + 4] == TERMINATED || PID > 16 || PID < 0) then
+        [RETURN] = -1;
+        breakpoint;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_PROCESS;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 5] = PID;
+    backup;
+    call MOD_5;
+    restore;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    [RETURN] = 0;
+    breakpoint;
+    SP = userSP;
+    ireturn;
+endif;
+
+
+// signal
+if (system_call_number == 14) then
+    R0 = 0;
+    while (R0 < 16) do
+        if ([PROCESS_TABLE + R0 * 16 + 4] == WAIT_PROCESS && [PROCESS_TABLE + R0 * 16 + 5] == [SYSTEM_STATUS_TABLE + 1]) then
+            [PROCESS_TABLE + R0 * 16 + 4] = READY;
+		    [PROCESS_TABLE + R0 * 16 + 5] = -1;
+        endif;
+        R0 = R0 + 1;
+    endwhile;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    [RETURN] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+[RETURN] = -1;
+SP = userSP;
+ireturn;
+

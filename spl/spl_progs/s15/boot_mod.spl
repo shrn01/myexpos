@@ -52,6 +52,14 @@ loadi(21,34);
 loadi(22,35);
 loadi(23,36);
 
+// int 11 i.e. int 11
+loadi(24,37);
+loadi(25,38);
+
+//int 15 i.e. shutdown
+loadi(32,45);
+loadi(33,46);
+
 //module 0 (Resource Manager)
 loadi(40,53);
 loadi(41,54);

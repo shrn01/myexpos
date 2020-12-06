@@ -60,6 +60,28 @@ if ( funcNum == 3 ) then
     breakpoint;
 
     multipop(R1,R2);
+
+    multipush(R0,R5);
+    alias prevMODE R5;
+    prevMODE = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9];
+    if (prevMODE != 9) then
+        R0 = 1;
+        while (R0 < 16) do
+            if ([PROCESS_TABLE + R0 * 16 + 4] == WAIT_PROCESS && [PROCESS_TABLE + R0 * 16 + 5] == [SYSTEM_STATUS_TABLE + 1]) then
+                [PROCESS_TABLE + R0 * 16 + 4] = READY;
+                [PROCESS_TABLE + R0 * 16 + 5] = -1;
+            endif;
+
+            if ([PROCESS_TABLE + R0 * 16 + 2] == [SYSTEM_STATUS_TABLE + 1]) then
+                [PROCESS_TABLE + R0 * 16 + 2] = -1;
+            endif;
+
+            R0 = R0 + 1;
+        endwhile;
+
+    endif;
+    multipop(R0, R5);
+
     [PROCESS_TABLE + R2 * 16 + 4] = TERMINATED;
     return;
 endif;

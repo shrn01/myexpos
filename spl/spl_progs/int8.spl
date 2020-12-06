@@ -25,7 +25,7 @@ PTBR = PAGE_TABLE_BASE + currentPID * 20;
 if (childPID == -1) then
     multipush(R1,R2);
     R1 = [PROCESS_TABLE + currentPID * 16 + 13];
-    R2 = [PTBR + (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
+    R2 = [PTBR + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
     [R2] = -1;
     multipop(R1,R2);
     SP = [PROCESS_TABLE + currentPID * 16 + 13];
