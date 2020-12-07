@@ -53,23 +53,6 @@ if ([PTBR + 4] == -1) then
 
     restore;
 endif;
-multipush(R4);
-R4 = 8;
-while (R4 < 16) do
-    if ([PTBR + R4] == -1) then
-        if ([DISK_MAP_TABLE + currentPID * 10 + R4 / 2] != -1) then  
-            backup;
-            R1 = 5;
-            R2 = [DISK_MAP_TABLE + currentPID * 10 + R4 / 2];
-            call MOD_2;
-            [PAGE_TABLE_BASE + currentPID * 20 + R4] = R0;
-            [PAGE_TABLE_BASE + currentPID * 20 + R4 + 1] = "0100"; 
-            restore;
-        endif;
-    endif;
-    R4 = R4 + 2;
-endwhile;
-multipop(R4);
 
 // setting stack for the child
 
@@ -96,7 +79,6 @@ call MOD_2;
 
 // setting process table for the LITTLE CHILD
 
-multipush(R3);
 alias Child_Process_Table R3;
 Child_Process_Table = PROCESS_TABLE + childPID * 16;
 
@@ -118,7 +100,29 @@ Child_Process_Table = PROCESS_TABLE + childPID * 16;
 
 
 // C O P Y   P E R   P R O C E S S   R E S O U R C E   T A B L E   H E R E
-// I N   F U R T H E R   S T A G E S
+
+// SEMAPHORE_TABLE 
+// 0 --> Locking process
+// 1 --> Number of processes sharing
+
+
+multipush(R4,R6,R7);
+alias i R4;
+i = 496;
+R6 = [Child_Process_Table + 11] * 512;
+R7 = [PROCESS_TABLE + currentPID * 16 + 11] * 512;
+
+while (i < 511) do
+    [R6 + i] = [R7 + i];
+    [R6 + i + 1] = [R7 + i + 1];
+
+    if ([R7 + i] == 1) then
+        [SEMAPHORE_TABLE + [R7 + i + 1] * 4 + 1] = [SEMAPHORE_TABLE + [R7 + i + 1] * 4 + 1] + 1;
+    endif;
+
+    i = i + 2;
+endwhile;
+multipop(R4,R6,R7);
 
 
 // Copy Disk Map Table

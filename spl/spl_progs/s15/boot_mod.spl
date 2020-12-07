@@ -56,6 +56,14 @@ loadi(23,36);
 loadi(24,37);
 loadi(25,38);
 
+//int 13 with semaphores and stuff
+loadi(28,41);
+loadi(29,42);
+
+//int 14 with semlock and semunlock
+loadi(30,43);
+loadi(31,44);
+
 //int 15 i.e. shutdown
 loadi(32,45);
 loadi(33,46);
@@ -114,6 +122,16 @@ endwhile;
 
 while (index < 128) do
 	[MEMORY_FREE_LIST + index] = 0;
+	index = index + 1;
+endwhile;
+
+
+// let's initialise the SEMAPHORE_TABLE
+
+index = 0;
+while (index < 32) do
+	[SEMAPHORE_TABLE + index * 4] = -1;
+	[SEMAPHORE_TABLE + index * 4 + 1] = 0;
 	index = index + 1;
 endwhile;
 

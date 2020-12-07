@@ -25,6 +25,54 @@ endif;
 
 
 
+// Acquire Semaphore
+if (functionNum == 6) then
+    multipush(R4);
+    R4 = 0;
+    while (R4 < 32) do
+        if ([SEMAPHORE_TABLE + R4 * 4 + 1] == 0) then
+            break;
+        endif;
+        R4 = R4 + 1;
+    endwhile;
+
+    if (R4 == 32) then
+        R0 = -1;
+        multipop(R4);
+        return;
+    endif;
+
+    [SEMAPHORE_TABLE + R4 * 4 + 1] = 1;     // Processes using this Semaphore
+    [SEMAPHORE_TABLE + R4 * 4] = -1;        // Locking PID
+
+    R0 = R4;
+    multipop(R4);
+    return;
+endif;
+
+
+
+// Release Semaphore
+if (functionNum == 7) then
+    if ([SEMAPHORE_TABLE + R2 * 4] == R3) then
+        [SEMAPHORE_TABLE + R2 * 4] = -1;
+        multipush(R4);
+        R4 = 0;
+        while (R4 < 16) do
+            if ([PROCESS_TABLE + R4 * 16 + 4] == WAIT_SEMAPHORE && [PROCESS_TABLE + R4 * 16 + 5] == R2) then
+                [PROCESS_TABLE + R4 * 16 + 4] = READY;
+            endif;
+            R4 = R4 + 1;
+        endwhile;
+        multipop(R4);
+    endif;
+
+    [SEMAPHORE_TABLE + R3 * 4 + 1] = [SEMAPHORE_TABLE + R3 * 4 + 1] - 1;
+    R0 = 0;
+    return;
+endif;
+
+
 // Acquire Terminal	
 if (functionNum == 8) then
     while ([TERMINAL_STATUS_TABLE] == 1) do

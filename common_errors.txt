@@ -3,4 +3,4 @@
 3. Unmatched pops and pushs
 4. Essential registers value not saved and is lost when another interrupt or module is called.
 5. Modifying the stack wrongly.
-6. 
+6. Setting the memory pages correctly

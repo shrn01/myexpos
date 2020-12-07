@@ -1,0 +1,93 @@
+// int 13 with semget and semrelease
+
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+// semget
+if (system_call_number == 17) then
+    alias userpage R7;
+    alias index R8;
+
+    userpage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+
+    R6 = 0;
+    while (R6 < 511) do
+        if ([userpage * 512 + R6 + RESOURCE_TABLE_OFFSET] == -1) then
+            break;
+        endif;
+        R6 = R6 + 2;
+    endwhile;
+
+    if (R6 == 16) then
+        [RETURN] = -1;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+        ireturn;
+    endif;
+    
+    // saying its a semaphore
+    [userpage * 512 + R6 + RESOURCE_TABLE_OFFSET] = 1;
+
+    multipush(R1,R2);
+    R1 = 6;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+
+    call MOD_0;
+    multipop(R1,R2);
+
+    [userpage * 512 + R6 + RESOURCE_TABLE_OFFSET + 1] = R0;
+
+    [RETURN] = R6 / 2;
+    SP = userSP;
+
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    ireturn;
+endif;
+
+// semrelease
+if (system_call_number == 18) then
+    alias userpage R7;
+    alias semid R6;
+
+    userpage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+    semid = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+
+    if ([userpage * 512 + RESOURCE_TABLE_OFFSET + semid * 2] != 1 || semid < 0 || semid > 7) then
+        [RETURN] = -1;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+        ireturn;
+    endif;
+
+    multipush(R1,R2,R3);
+    R1 = 7;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    R2 = [userpage * 512 + RESOURCE_TABLE_OFFSET + semid * 2 + 1];
+
+    call MOD_0;
+    multipop(R1,R2,R3);
+
+    [userpage * 512 + RESOURCE_TABLE_OFFSET + semid * 2] = -1;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    [RETURN] = 0;
+
+    SP = userSP;
+    ireturn;
+endif;
