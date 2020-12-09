@@ -7,6 +7,7 @@ begin
     while(1 == 1) do
         temp = exposcall("Write",-2,"Enter Command");
         temp = exposcall("Read",-1,input);
+        // temp = exposcall("Write",-2,input);
         if ((input != "Shutdown") AND (input != "s") AND (input != "shutdown")) then
             pid = exposcall("Fork");
             if (pid != 0) then

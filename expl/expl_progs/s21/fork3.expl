@@ -4,7 +4,7 @@ decl
     string a;
 enddecl
 begin
-    a = "getpid.xsm";
+    a = "pid.xsm";
     temp = exposcall("Fork");
     temp = exposcall("Fork");
     temp = exposcall("Fork");

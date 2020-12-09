@@ -1,0 +1,189 @@
+// int 4 for file calls
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+alias i R6;
+
+
+if (system_call_number == 1) then
+    alias FileName R7;
+    alias Permission R3;
+    alias process_table R4;
+
+    process_table = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+    FileName = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+    Permission = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+    i = 0;
+    while (i < 60) do
+        if ([INODE_TABLE + i * 16 + 1] == FileName) then
+            [RETURN] = 0;
+            [process_table + 9 ] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    i = 0;
+    while (i < 60) do
+        if ([INODE_TABLE + i * 16 + 1] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 60) then
+        [RETURN] = -1;
+        [process_table + 9 ] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    multipush(R8);
+    // Setting Inode Table
+
+    R8 = INODE_TABLE + i * 16;
+
+    [R8] = DATA;
+    [R8 + 1] = FileName;
+    [R8 + 2] = 0;
+    [R8 + 3] = [process_table + 3];
+    [R8 + 4] = Permission;
+    [R8 + 8] = -1;
+    [R8 + 9] = -1;
+    [R8 + 10] = -1;
+    [R8 + 11] = -1;
+
+    // Setting Root File
+
+    R8 = ROOT_FILE + i * 8;
+
+    [R8] = FileName;
+    [R8 + 1] = 0;
+    [R8 + 2] = DATA;
+    [R8 + 3] = [USER_TABLE + [process_table + 3]];
+    [R8 + 4] = Permission;
+
+    multipop(R8);
+
+    [RETURN] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+if (system_call_number == 4) then
+    alias FileName R7;
+    alias process_table R4;
+
+    FileName = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+    process_table = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+    i = 0;
+    while (i < 60) do
+        if ([INODE_TABLE + i * 16 + 1] == FileName) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 60) then
+        print "NOT PRESENT";
+        [RETURN] = 0;
+        [process_table + 9 ] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    if ([INODE_TABLE + i * 16] != DATA) then
+        [RETURN] = -1;
+        [process_table + 9 ] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    if ([INODE_TABLE + i * 16 + 4] == EXCLUSIVE && [process_table + 3] != [INODE_TABLE + i * 16 + 3] && [process_table + 3] != 1) then
+        [RETURN] = -1;
+        [process_table + 9 ] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    // AQUIRE INODE 
+    multipush(R1,R2,R3);
+    R1 = 4;
+    R2 = i;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_0;
+    multipop(R1,R2,R3);
+
+    if ([FILE_STATUS_TABLE + i * 4 + 1] != -1) then
+        print [FILE_STATUS_TABLE + i * 4 + 1];
+        multipush(R1,R2,R3);
+        R1 = 5;
+        R2 = i;
+        R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_0;
+        multipop(R1,R2,R3);
+
+        [RETURN] = -2;
+        [process_table + 9 ] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    multipush(R3);  // BACKING UP i
+    R3 = 8;
+    while (R3 < 11) do
+        if ([BUFFER_TABLE + ([INODE_TABLE + i * 16 + R3] % 4) * 4] == [INODE_TABLE + i * 16 + R3]) then
+            [BUFFER_TABLE + ([INODE_TABLE + i * 16 + R3] % 4) * 4 + 1] = 0;
+        endif;
+
+        multipush(R1,R2,R3);
+        R1 = 4;
+        R2 = [INODE_TABLE + i * 16 + R3];
+        R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_2;
+        multipop(R1,R2,R3);
+        R3 = R3 + 1;
+    endwhile;
+    multipop(R3);
+
+    [INODE_TABLE + i * 16 + 1] = -1;
+    [ROOT_FILE + i * 8] = -1;
+
+    multipush(R1,R2,R3);
+    R1 = 5;
+    R2 = i;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_0;
+    multipop(R1,R2,R3);
+
+    SP = userSP;
+    [RETURN] = 0;
+    [process_table + 9 ] = 0;
+
+    ireturn;
+endif;
+
+
+
+
+
+
