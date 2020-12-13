@@ -10,6 +10,47 @@ alias temp R3;
 
 
 
+// Acquire Buffer
+if (functionNum == 1) then
+    alias BufferNumber R2;
+    
+    while ([BUFFER_TABLE + BufferNumber * 4 + 2] != -1) do
+        [PROCESS_TABLE + R3 * 16 + 4] = WAIT_BUFFER;
+        [PROCESS_TABLE + R3 * 16 + 5] = BufferNumber;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+
+    [BUFFER_TABLE + BufferNumber * 4 + 2] = R3;
+    return;
+endif;
+
+// Release Buffer
+if (functionNum == 2) then
+    alias BufferNumber R2;
+
+    if (R3 != [BUFFER_TABLE + BufferNumber * 4 + 2]) then
+        R0 = -1;
+        return;
+    endif;
+
+    [BUFFER_TABLE + BufferNumber * 4 + 2] = -1;
+
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == WAIT_BUFFER && [PROCESS_TABLE + R1 * 16 + 5] == BufferNumber) then
+            [PROCESS_TABLE + R1 * 16 + 4] = READY;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
+    
+
+
 // Acquire Disk
 if (functionNum == 3) then
     while ([DISK_STATUS_TABLE] == 1) do
@@ -23,6 +64,49 @@ if (functionNum == 3) then
     return;
 endif;
 
+
+// Acquire Inode
+if (functionNum == 4) then
+    breakpoint;
+    while ([FILE_STATUS_TABLE + R2 * 4] != -1) do
+        [PROCESS_TABLE + R3 * 16 + 4] = WAIT_FILE;
+        [PROCESS_TABLE + R3 * 16 + 5] = R2;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+
+    if ([INODE_TABLE + R2 * 16 + 1] == -1) then
+        R0 = -1;
+        return;
+    endif;
+
+    [FILE_STATUS_TABLE + R2 * 4] = R3;
+    R0 = 0;
+    return;
+endif;
+
+
+// Release Inode
+if (functionNum == 5) then
+    if (R3 != [FILE_STATUS_TABLE + R2 * 4]) then
+        R0 = -1;
+        return;
+    endif;
+
+    [FILE_STATUS_TABLE + R2 * 4] = -1;
+
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == WAIT_FILE && [PROCESS_TABLE + R1 * 16 + 5] == R2) then
+            [PROCESS_TABLE + R1 * 16 + 4] = READY;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
 
 
 // Acquire Semaphore

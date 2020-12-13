@@ -1,0 +1,115 @@
+// int 5 for open close and Read calls
+
+// FILE STATUS TABLE    ==> To see how many processes are using each file                               ==> 60 entries
+// OPEN FILE TABLE      ==> To see all the open files at present, a single file can be open many times  ==> 32 entries 
+// PER-PROCESS RESOURCE TABLE ==> To keep track of all the semaphores and Files opened by a process     ==> last 8 entries in User page area
+
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+alias i R6;
+ 
+// open system Call
+if (system_call_number == 2) then
+    alias userpage R7;
+    alias FileName R8;
+
+    userpage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+    FileName = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+    i = 0;
+    while (i < 511) do
+        if ([userpage * 512 + i + RESOURCE_TABLE_OFFSET] == -1) then
+            break;
+        endif;
+        i = i + 2;
+    endwhile;
+
+    if (i == 16) then
+        [RETURN] = -3;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+        ireturn;
+    endif;
+    
+
+    // OPEN FROM FILE MANAGER MODULE 
+    multipush(R1,R2);
+    R1 = 3;
+    R2 = FileName;
+
+    call MOD_3;
+    multipop(R1,R2);
+
+    if (R0 < 0) then
+        [RETURN] = R0;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+        ireturn;
+    endif;
+
+
+    // saying its a file
+    [userpage * 512 + i + RESOURCE_TABLE_OFFSET] = FILE;
+    [userpage * 512 + i + RESOURCE_TABLE_OFFSET + 1] = R0;
+
+
+
+    [RETURN] = i / 2;
+    SP = userSP;
+
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    ireturn;
+endif;
+
+
+// Close system Call
+if (system_call_number == 3) then
+    alias userpage R7;
+    alias FileIndex R8;
+    alias OpenFileIndex R6;
+
+    userpage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+    FileIndex = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+
+    if ([userpage * 512 + RESOURCE_TABLE_OFFSET + FileIndex * 2] != FILE || FileIndex < 0 || FileIndex > 7) then
+        [RETURN] = -1;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+        ireturn;
+    endif;
+
+    OpenFileIndex = [userpage * 512 + RESOURCE_TABLE_OFFSET + FileIndex * 2 + 1];
+    multipush(R1,R2);
+    R1 = 4;
+    R2 = OpenFileIndex;
+
+    call MOD_3;
+    multipop(R1,R2);
+
+
+    // invalidate the resource table entry
+    [userpage * 512 + RESOURCE_TABLE_OFFSET + FileIndex * 2] = -1;
+    [userpage * 512 + RESOURCE_TABLE_OFFSET + FileIndex * 2 + 1] = -1;
+
+    [RETURN] = 0;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+    ireturn;
+endif;

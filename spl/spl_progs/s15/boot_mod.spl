@@ -33,6 +33,10 @@ loadi(5,18);
 loadi(10,23);
 loadi(11,24);
 
+//int 5 
+loadi(12,25);
+loadi(13,26);
+
 //int 6 
 loadi(14,27);
 loadi(15,28);
@@ -80,6 +84,10 @@ loadi(43,56);
 //module 2 (Memory manager)
 loadi(44,57);
 loadi(45,58);
+
+//module 3 (File Manager)
+loadi(46,59);
+loadi(47,60);
 
 //module 4 (Device Manager)
 loadi(48,61);
@@ -176,6 +184,16 @@ while (index < 4) do
 	[BUFFER_TABLE + index * 4] = -1;
 	[BUFFER_TABLE + index * 4 + 1] = 0;
 	[BUFFER_TABLE + index * 4 + 2] = -1;
+	index = index + 1;
+endwhile;
+
+
+// Open File Table
+index = 0;
+while(index < 32) do
+	[OPEN_FILE_TABLE + index * 4] = -1;
+	[OPEN_FILE_TABLE + index * 4 + 1] = -1;
+	[OPEN_FILE_TABLE + index * 4 + 2] = -1;
 	index = index + 1;
 endwhile;
 

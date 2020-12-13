@@ -38,9 +38,19 @@ if (funcNum == 2) then
         if ([R4 * 512 + RESOURCE_TABLE_OFFSET + R3] == 1) then
             multipush(R1,R2,R3);
             R1 = 7;
-            R3 = [SYSTEM_STATUS_TABLE + 1];
             R2 = [R4 * 512 + RESOURCE_TABLE_OFFSET + R3 + 1];
+            R3 = [SYSTEM_STATUS_TABLE + 1];
             call MOD_0;
+            multipop(R1,R2,R3);
+        endif;
+
+        if ([R4 * 512 + RESOURCE_TABLE_OFFSET + R3] == 0) then
+            multipush(R1,R2,R3);
+            R1 = 4;
+            R2 = [R4 * 512 + RESOURCE_TABLE_OFFSET + R3 + 1];
+            R3 = [SYSTEM_STATUS_TABLE + 1];
+
+            call MOD_3;
             multipop(R1,R2,R3);
         endif;
         R3 = R3 + 2;

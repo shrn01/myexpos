@@ -3,6 +3,8 @@ load --int=timer $HOME/myexpos/spl/spl_progs/s15/timerint.xsm
 load --int=disk $HOME/myexpos/spl/spl_progs/diskint.xsm
 load --int=console $HOME/myexpos/spl/spl_progs/s15/consoleint.xsm
 load --int=4 $HOME/myexpos/spl/spl_progs/int4.xsm
+load --int=5 $HOME/myexpos/spl/spl_progs/int5.xsm
+load --int=6 $HOME/myexpos/spl/spl_progs/s15/int6.xsm
 load --int=7 $HOME/myexpos/spl/spl_progs/s15/int7.xsm
 load --int=8 $HOME/myexpos/spl/spl_progs/int8.xsm
 load --int=9 $HOME/myexpos/spl/spl_progs/int9.xsm
@@ -14,6 +16,7 @@ load --int=15 $HOME/myexpos/spl/spl_progs/int15.xsm
 load --module 0 $HOME/myexpos/spl/spl_progs/s15/mod0.xsm
 load --module 1 $HOME/myexpos/spl/spl_progs/mod1.xsm
 load --module 2 $HOME/myexpos/spl/spl_progs/mod2.xsm
+load --module 3 $HOME/myexpos/spl/spl_progs/mod3.xsm
 load --module 4 $HOME/myexpos/spl/spl_progs/s15/mod4.xsm
 load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
 load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm

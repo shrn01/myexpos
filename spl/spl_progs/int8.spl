@@ -120,6 +120,10 @@ while (i < 511) do
         [SEMAPHORE_TABLE + [R7 + i + 1] * 4 + 1] = [SEMAPHORE_TABLE + [R7 + i + 1] * 4 + 1] + 1;
     endif;
 
+    if ([R7 + 1] == 0) then
+        [OPEN_FILE_TABLE + [R7 + i + 1] * 4 + 1] = [OPEN_FILE_TABLE + [R7 + i + 1] * 4 + 1] + 1;
+    endif;
+    
     i = i + 2;
 endwhile;
 multipop(R4,R6,R7);
