@@ -1,48 +1,166 @@
-// print "WRITE INTERRUPT";
+//WRITE INTERRUPT
 
 
+// FileDescriptor = index of file in Per-Process Resource Table 
+// For Files ==> 0 -> 7
+// For terminal ==> -1
 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9 ] = 5;
-
-alias userSP R0;
+alias userSP R5;
 userSP = SP;
 
-
 [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
-SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1]*16 + 11]*512 - 1;
-
-alias phyPageNum R1;
-alias offset R2;
-alias fileDescriptorAddress R3;
-alias fileDescriptor R4;
-alias returnAddress R5;
-alias word R6;
-
-
-phyPageNum = [PTBR + 2 * (userSP - 4) / 512];
-offset = (userSP - 4) % 512;
-fileDescriptorAddress = phyPageNum * 512 + offset;
-fileDescriptor = [fileDescriptorAddress];
-returnAddress = [PTBR + 2 * (userSP - 1) / 512] * 512 + (userSP - 1) % 512;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
 
 
 
-if(fileDescriptor == -2) then
-	word = [[PTBR + 2*(userSP-3)/512]*512 + (userSP - 3)%512];
-	multipush(R0,R1,R2,R3,R4,R5,R6);
-	R1 = 3;
-	R2 = [SYSTEM_STATUS_TABLE + 1];
-	R3 = word;
+alias system_call_number R4;
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
 
-	call MOD_4;
-	multipop(R0,R1,R2,R3,R4,R5,R6);
-	[returnAddress] = 0;
-else
-	[returnAddress] = -1;
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+
+alias Word R6;
+alias FileDescriptor R7;
+FileDescriptor = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+Word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+
+// For terminal write
+if (FileDescriptor == -2) then
+    multipush(R1,R2,R3);
+    R1 = 3;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = Word;
+    call MOD_4;
+    multipop(R1,R2,R3);
+    [RETURN] = 0;
+
+    SP = userSP;
+    [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+    ireturn;
+endif;
+
+
+// For File write 
+if (FileDescriptor > -1 && FileDescriptor < 8) then
+    alias OpenFileIndex R1;
+    alias userpage R3;
+    alias inodeIndex R4;
+    
+    userpage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+
+    if ([userpage * 512 + 496 + FileDescriptor * 2] != FILE) then
+        [RETURN] = -1;
+        SP = userSP;
+        [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+        ireturn;
+    endif;
+
+    OpenFileIndex = [userpage * 512 + 496 + FileDescriptor * 2 + 1];
+    inodeIndex = [OPEN_FILE_TABLE + OpenFileIndex * 4];
+
+	if (([INODE_TABLE + inodeIndex * 16 + 4] == EXCLUSIVE && [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 3] != 1 && [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 3] != [INODE_TABLE + inodeIndex * 16 + 3]) || inodeIndex == 0) then
+		[RETURN] = -3;
+		SP = userSP;
+		[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+		ireturn;
+	endif;
+	
+	multipush(R1,R2,R3,R4,R5);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+
+    call MOD_0;
+    multipop(R1,R2,R3,R4,R5);
+    if (R0 == -1) then
+        [RETURN] = -1;
+        SP = userSP;
+        [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+        ireturn;
+    endif;
+
+	alias lseek R7;
+    R7 = [OPEN_FILE_TABLE + OpenFileIndex * 4 + 2];
+
+
+	if (lseek == 2048) then // File size is at maximum
+		multipush(R1,R2,R3,R4,R5);
+		R1 = 5;
+		R2 = inodeIndex;
+		R3 = [SYSTEM_STATUS_TABLE + 1];
+
+		call MOD_0;
+		multipop(R1,R2,R3,R4,R5);
+		[RETURN] = -1;
+        SP = userSP;
+        [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+        ireturn;
+	endif;
+
+
+	if (lseek % 512 == 0 && lseek == [INODE_TABLE + inodeIndex * 16 + 2]) then
+		multipush(R0,R1,R2,R3,R5);
+		R1 = 3;
+
+		call MOD_2;
+		print R0;
+		if (R0 == -1) then
+			multipush(R1,R2,R3,R4);
+			R1 = 5;
+			R2 = inodeIndex;
+			R3 = [SYSTEM_STATUS_TABLE + 1];
+
+			call MOD_0;
+			multipop(R1,R2,R3,R4);
+			multipop(R0,R1,R2,R3,R5);
+			[RETURN] = -2;
+			SP = userSP;
+			[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+			ireturn;
+		endif;
+
+		[INODE_TABLE + inodeIndex * 16 + 8 + lseek / 512] = R0;
+		multipop(R0,R1,R2,R3,R5);
+	endif;
+
+
+	multipush(R1,R2,R3,R4,R5);
+	R1 = 1;
+	R2 = [INODE_TABLE + inodeIndex * 16 + 8 + lseek / 512];
+	R3 = lseek % 512;
+	R4 = Word;
+
+	call MOD_3;
+	multipop(R1,R2,R3,R4,R5);
+
+	if (lseek == [INODE_TABLE + inodeIndex * 16 + 2]) then
+		[INODE_TABLE + inodeIndex * 16 + 2] = lseek + 1;
+		[ROOT_FILE + inodeIndex * 8 + 1] = lseek + 1;
+	endif;
+
+	[OPEN_FILE_TABLE + OpenFileIndex * 4 + 2] = [OPEN_FILE_TABLE + OpenFileIndex * 4 + 2] + 1;
+
+    multipush(R1,R2,R3,R4,R5);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+
+    call MOD_0;
+    multipop(R1,R2,R3,R4,R5);
+    [RETURN] = 0;
+    SP = userSP;
+    [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+    ireturn;
 endif;
 
 
 
-SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13];
-[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 9] = 0;
+// If the FileDescriptor is invalid
+
+[RETURN] = -1;
+SP = userSP;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
 ireturn;

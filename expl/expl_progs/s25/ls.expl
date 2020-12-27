@@ -1,0 +1,21 @@
+int main(){
+decl
+	int a,i,fd,temp;
+    string Name,line;
+enddecl
+begin
+	Name = "root";
+	fd = exposcall("Open",Name);
+    i = 0;
+    while (i < 60) do
+	    a = exposcall("Read",fd,line);
+        if (line != "-1") then
+            temp = exposcall("Write",-2,line);
+        endif;
+        a = exposcall("Seek",fd,7);
+        i = i + 1;
+    endwhile;
+    temp = exposcall("Close",fd);
+	return 0;
+end
+}

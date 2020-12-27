@@ -1,8 +1,0 @@
-alias counter R0;
-alias square R1;
-counter = 1;
-while(counter <= 20) do
-    square = counter * counter
-    print square;
-    counter = counter + 1;
-endwhile;

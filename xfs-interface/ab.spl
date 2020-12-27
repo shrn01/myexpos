@@ -1,0 +1,131 @@
+//write
+//INT 7
+//setting the init number
+//  print "write";
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 5;
+alias user_sp R1;
+alias current_pid R2;
+current_pid = [SYSTEM_STATUS_TABLE + 1 ];
+//setting kernal stack
+user_sp = SP;
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+//setting mod to 5 systemcall no
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16)  + 9] = 5;
+
+//getting first arguement
+
+alias file_desc R3;
+file_desc=[[PTBR + 2*(user_sp - 4)/512]*512 + (user_sp-4)%512];
+alias word R5; // word to be written
+word = [([PTBR + 2 * ((user_sp - 3) / 512)] * 512) + ((user_sp - 3) % 512)];
+
+alias physicalAddrRetVal R10;
+physicalAddrRetVal = ([PTBR + 2 * (user_sp - 1)/ 512] * 512) + ((user_sp - 1) % 512);
+
+if (file_desc != -2) then
+    if (file_desc <0 || file_desc>7  ) then
+        [physicalAddrRetVal] = -1;
+    else 
+        alias per_process R4;
+        per_process = [PROCESS_TABLE + 16*current_pid + 11]*512 + RESOURCE_TABLE_OFFSET +file_desc*2;
+        if([per_process]!=FILE) then
+            print "error";
+            [physicalAddrRetVal] = -1;
+        else
+            alias open_table R6;
+            open_table = [per_process + 1];
+            alias inode_itr R7;
+            inode_itr = [OPEN_FILE_TABLE + open_table*4 ];
+            //checking permission
+            multipush(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+                R3 = inode_itr;
+                R2 = [SYSTEM_STATUS_TABLE +1];
+                R1 = ACQUIRE_INODE;
+                call RESOURCE_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+            alias lseek R8;
+            lseek = [OPEN_FILE_TABLE + open_table*4 + 2];
+            if( lseek == MAX_FILE_SIZE) then
+                print "max File";
+                multipush(R1,R2,R10);
+                    R3 = inode_itr;
+                    R2 = [SYSTEM_STATUS_TABLE +1];
+                    R1 = RELEASE_INODE;
+                    call RESOURCE_MANAGER;
+                multipop(R1,R2,R10);
+                [physicalAddrRetVal] = -1;
+            else
+                //if lseek is multiple of 512 and same as file_size
+                if(lseek%512 == 0 && lseek == [INODE_TABLE + 16*inode_itr +2]) then
+                    //get free block
+                    multipush(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+                        R1 = GET_FREE_BLOCK;
+                        call MEMORY_MANAGER;
+                    multipop(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+                    if(R0 == -1) then
+                        //no free space
+                        //if no free block release
+                        multipush(R1,R2,R10);
+                            R3 = inode_itr;
+                            R2 = [SYSTEM_STATUS_TABLE +1];
+                            R1 = RELEASE_INODE;
+                            call RESOURCE_MANAGER;
+                        multipop(R1,R2,R10);
+                        [physicalAddrRetVal] = -2;
+                        call goto_ret;
+                    endif;
+                endif;
+                //setting new disk block
+                // print "write_check";
+                // breakpoint;
+                [INODE_TABLE + 16*inode_itr + 8 + lseek/512] = R0;
+                //buffered write
+                multipush(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+                    R2 = [INODE_TABLE + 16*inode_itr + 8 + lseek/512];
+                    R3 = lseek%512;
+                    R4 = word;
+                    R1 = BUFFERED_WRITE;
+                    print "buf_wr";
+					print R4;
+                    breakpoint;
+                    call FILE_MANAGER;
+                multipop(R1,R2,R3,R4,R5,R6,R7,R8,R10);
+                //incrementing file size if required
+                if([OPEN_FILE_TABLE + open_table*4 + 2]==[INODE_TABLE + 16*inode_itr +2]) then
+                    [INODE_TABLE + 16*inode_itr +2] = [INODE_TABLE + 16*inode_itr +2] + 1;
+                    [ROOT_FILE + 8*inode_itr +1] = [ROOT_FILE + 8*inode_itr +1] + 1;
+                endif;
+                [OPEN_FILE_TABLE + open_table*4 + 2] = [OPEN_FILE_TABLE + open_table*4 + 2]  +1;
+                multipush(R1,R2,R10);
+                    R3 = inode_itr;
+                    R2 = [SYSTEM_STATUS_TABLE +1];
+                    R1 = RELEASE_INODE;
+                    call RESOURCE_MANAGER;
+                multipop(R1,R2,R10);
+                [physicalAddrRetVal] = 0;
+            endif;
+        endif;
+    endif;
+else
+     //code when argument 1 is valid
+    //pushing register
+    multipush(R1,R2,R3,R5,R10);
+    alias function_num R1;
+    alias PID R2;
+    alias word_print R3;
+
+    function_num = 3; //terminal write
+    PID = [SYSTEM_STATUS_TABLE +1 ];
+    word_print = word;
+    call DEVICE_MANAGER;
+    multipop(R1,R2,R3,R5,R10);
+    [physicalAddrRetVal] = 0;
+    // print "write_int";
+    // breakpoint;
+endif;
+goto_ret :
+//changing sp back to user_mode
+SP = user_sp;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16)  + 9] = 0;
+ireturn;

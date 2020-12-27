@@ -50,6 +50,21 @@ if (funcNum == 2) then
 endif;
 
 
+// Get Free Block
+if (funcNum == 3) then
+    R1 = DISK_FREE_AREA;
+    while (R1 < DISK_SWAP_AREA) do
+        if ([DISK_FREE_LIST + R1] == 0) then
+            [DISK_FREE_LIST + R1] = 1;
+            R0 = R1;
+            return;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+    R0 = -1;
+    return;
+endif;
+
 // Release Block	
 if (funcNum == 4) then
     [DISK_FREE_LIST + R2] = [DISK_FREE_LIST + R2] - 1;
@@ -60,7 +75,6 @@ endif;
 // Get Code Page	
 if (funcNum == 5) then
     // print "Entered load code function";
-    breakpoint;
     alias block R2;
     alias pid R3;
     alias index R4;
@@ -83,7 +97,6 @@ if (funcNum == 5) then
         endwhile;
         index = index + 1;
     endwhile;
-    breakpoint;
     multipush(R2);
     R1 = 1;
     call MOD_2;
@@ -97,7 +110,6 @@ if (funcNum == 5) then
     call MOD_4;
     multipop(R3);
     R0 = R3;
-    breakpoint;
     return;
 
 endif;

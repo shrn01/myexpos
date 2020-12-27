@@ -10,7 +10,7 @@
 // Illegal Memory Access:  EC => 2
 // Arithmetic exception:   EC => 3
 
-breakpoint;
+
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = -1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
@@ -60,7 +60,6 @@ if (EC == 0) then
     // print EPN;
     // print "FIXING IT";
     // print " ";
-    breakpoint;
     alias block R5;
     block = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + EPN];
     if (EPN == 4 || EPN == 5 || EPN == 6 || EPN == 7) then

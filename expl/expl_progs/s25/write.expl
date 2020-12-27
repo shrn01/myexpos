@@ -1,0 +1,33 @@
+int main(){
+decl
+	int a,fd,temp;
+    string Name,line,text;
+enddecl
+begin
+	temp = exposcall("Write",-2,"Name");
+	temp = exposcall("Read",-1,Name);
+	temp = exposcall("Write",-2,"Permission");
+	temp = exposcall("Read",-1,a);
+    temp = exposcall("Create",Name,a);
+	fd = exposcall("Open",Name);
+
+
+	a = 1;
+	while (a < 1101) do
+		temp = exposcall("Write",fd,a);
+		a = a + 1;
+	endwhile;
+	
+    a = exposcall("Seek",fd,-1);
+	
+    while (a > -1) do
+	    a = exposcall("Read",fd,line);
+        a = exposcall("Seek",fd,-2);
+        temp = exposcall("Write",-2,line);
+    endwhile;
+
+	temp = exposcall("Close",fd);
+	temp = exposcall("Write",-2,"Saved");
+	return 0;
+end
+}

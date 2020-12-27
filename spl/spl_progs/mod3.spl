@@ -5,11 +5,11 @@
 // OPEN = 3	       	        File Name	                                    File Table Index,-1 or -2
 // CLOSE = 4	            File Table Index	                            NIL
 
-// Buffered Read
-if (R1 == 2) then
+// Buffered Read and Write {Using same for both to reduce code}
+if (R1 == 2 || R1 == 1) then
     alias Block R2;
     alias Offset R3;
-    alias WordAddress R4;
+    alias WordAddress_or_Word R4; // Word address for Read and Word for write
     alias BufferNumber R5;
 
     BufferNumber = Block % 4;
@@ -46,8 +46,12 @@ if (R1 == 2) then
         call MOD_4;
         multipop(R1,R2,R3,R4);
     endif;
-
-    [WordAddress] = [(71 + BufferNumber) * 512 + Offset];
+    if (R1 == 2) then
+        [WordAddress_or_Word] = [(71 + BufferNumber) * 512 + Offset];
+    else
+        [(71 + BufferNumber) * 512 + Offset] = WordAddress_or_Word;
+        [BUFFER_TABLE + BufferNumber * 4 + 1] = 1;
+    endif;
 
     multipush(R1,R2,R3);
     R1 = 2;
@@ -83,7 +87,6 @@ if (R1 == 3) then
         multipop(R3,R4);
         return;
     endif;
-    breakpoint;
     multipush(R1,R2,R3);
     R2 = R1;
     R1 = 4;
@@ -152,10 +155,8 @@ if (R1 == 3) then
     R2 = R1;
     R1 = 5;
     R3 = [SYSTEM_STATUS_TABLE + 1];
-    breakpoint;
     call MOD_0;
     multipop(R1,R2,R3);
-    breakpoint;
     R0 = R3;
     multipop(R3,R4);
     return;

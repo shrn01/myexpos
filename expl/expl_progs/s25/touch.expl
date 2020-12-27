@@ -1,0 +1,15 @@
+int main(){
+decl
+	int a,temp;
+    string Name;
+enddecl
+begin
+	temp = exposcall("Write",-2,"Name");
+	temp = exposcall("Read",-1,Name);
+	temp = exposcall("Write",-2,"Permission");
+	temp = exposcall("Read",-1,a);
+    temp = exposcall("Create",Name,a);
+	temp = exposcall("Write",-2,"Created");
+	return 0;
+end
+}

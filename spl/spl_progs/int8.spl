@@ -9,11 +9,14 @@
 // save user stack and switch to kernel stack
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
-// print [[PTBR + 2 * (SP) / 512] * 512 + (SP) % 512];
+
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 
 alias currentPID R5;
 currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+alias currentProcessTable R10;
+currentProcessTable = PROCESS_TABLE + currentPID * 16;
 
 alias childPID R6;
 R1 = 1;
@@ -24,11 +27,11 @@ PTBR = PAGE_TABLE_BASE + currentPID * 20;
 
 if (childPID == -1) then
     multipush(R1,R2);
-    R1 = [PROCESS_TABLE + currentPID * 16 + 13];
+    R1 = [currentProcessTable + 13];
     R2 = [PTBR + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
     [R2] = -1;
     multipop(R1,R2);
-    SP = [PROCESS_TABLE + currentPID * 16 + 13];
+    SP = [currentProcessTable + 13];
     ireturn;
 endif;
 
@@ -85,16 +88,16 @@ Child_Process_Table = PROCESS_TABLE + childPID * 16;
 [Child_Process_Table + 0] = 0;
 [Child_Process_Table + 1] = childPID;
 [Child_Process_Table + 2] = currentPID;
-[Child_Process_Table + 3] = [PROCESS_TABLE + currentPID * 16 + 3];
+[Child_Process_Table + 3] = [currentProcessTable + 3];
 [Child_Process_Table + 4] = CREATED;
-[Child_Process_Table + 5] = [PROCESS_TABLE + currentPID * 16 + 5];
-[Child_Process_Table + 6] = [PROCESS_TABLE + currentPID * 16 + 6];
-[Child_Process_Table + 7] = [PROCESS_TABLE + currentPID * 16 + 7];
+[Child_Process_Table + 5] = [currentProcessTable + 5];
+[Child_Process_Table + 6] = [currentProcessTable + 6];
+[Child_Process_Table + 7] = [currentProcessTable + 7];
 [Child_Process_Table + 8] = 0;
 [Child_Process_Table + 9] = 0;
-[Child_Process_Table + 10] = [PROCESS_TABLE + currentPID * 16 + 10];
+[Child_Process_Table + 10] = [currentProcessTable + 10];
 [Child_Process_Table + 12] = 0;
-[Child_Process_Table + 13] = [PROCESS_TABLE + currentPID * 16 + 13];
+[Child_Process_Table + 13] = [currentProcessTable + 13];
 [Child_Process_Table + 14] = PAGE_TABLE_BASE + childPID * 20;
 [Child_Process_Table + 15] = 10;
 
@@ -110,7 +113,7 @@ multipush(R4,R6,R7);
 alias i R4;
 i = 496;
 R6 = [Child_Process_Table + 11] * 512;
-R7 = [PROCESS_TABLE + currentPID * 16 + 11] * 512;
+R7 = [currentProcessTable + 11] * 512;
 
 while (i < 511) do
     [R6 + i] = [R7 + i];
@@ -175,7 +178,7 @@ multipop(R1);
 [[PROCESS_TABLE + childPID * 16 + 11] * 512] = BP;
 
 multipush(R1,R2);
-R1 = [PROCESS_TABLE + currentPID * 16 + 13];
+R1 = [currentProcessTable + 13];
 R2 = [PTBR + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
 [R2] = childPID;
 R2 = [ptbr_child + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
@@ -183,10 +186,9 @@ R2 = [ptbr_child + 2 * (R1 - 1) / 512] * 512 + (R1 - 1) % 512;
 multipop(R1,R2);
 
 
-[PROCESS_TABLE + currentPID * 16 + 9] = 0;
+[currentProcessTable + 9] = 0;
 
-SP = [PROCESS_TABLE + currentPID * 16 + 13];
+SP = [currentProcessTable + 13];
 
 
-breakpoint;
 ireturn;

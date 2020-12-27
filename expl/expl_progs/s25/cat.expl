@@ -1,0 +1,16 @@
+int main(){
+decl
+	int a,fd,temp;
+    string Name,line;
+enddecl
+begin
+	temp = exposcall("Write",-2,"Name");
+	temp = exposcall("Read",-1,Name);
+	fd = exposcall("Open",Name);
+    while (a > -1 AND fd > -1) do
+	    a = exposcall("Read",fd,line);
+        temp = exposcall("Write",-2,line);
+    endwhile;
+	return 0;
+end
+}

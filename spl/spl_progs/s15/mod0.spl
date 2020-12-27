@@ -67,7 +67,6 @@ endif;
 
 // Acquire Inode
 if (functionNum == 4) then
-    breakpoint;
     while ([FILE_STATUS_TABLE + R2 * 4] != -1) do
         [PROCESS_TABLE + R3 * 16 + 4] = WAIT_FILE;
         [PROCESS_TABLE + R3 * 16 + 5] = R2;

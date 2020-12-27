@@ -9,6 +9,9 @@ loadi(60,4);
 // Root File
 loadi(62,5);
 
+// Disk Free List
+loadi(61,2);
+
 //loading disk interrupt 
 loadi(6,19);
 loadi(7,20);

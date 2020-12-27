@@ -58,11 +58,9 @@ if ([new_process_table + 4] == CREATED) then
 	SP = [new_process_table + 13];
 	[new_process_table + 4] = RUNNING;
 	[new_process_table + 9] = 0;
-	breakpoint;
 	ireturn;
 endif;
 
 multipop (BP);
 [PROCESS_TABLE + newpid * 16 + 4] = RUNNING;
-// breakpoint;
 return;
