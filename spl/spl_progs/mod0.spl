@@ -1,0 +1,201 @@
+//Resource Manager Module
+// print "RESOURCE MANAGER";
+// breakpoint;
+
+
+
+alias functionNum R1;
+alias currentPID R2;
+alias temp R3;
+
+
+
+// Acquire Buffer
+if (functionNum == 1) then
+    alias BufferNumber R2;
+    
+    while ([BUFFER_TABLE + BufferNumber * 4 + 2] != -1) do
+        [PROCESS_TABLE + R3 * 16 + 4] = WAIT_BUFFER;
+        [PROCESS_TABLE + R3 * 16 + 5] = BufferNumber;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+
+    [BUFFER_TABLE + BufferNumber * 4 + 2] = R3;
+    return;
+endif;
+
+// Release Buffer
+if (functionNum == 2) then
+    alias BufferNumber R2;
+
+    if (R3 != [BUFFER_TABLE + BufferNumber * 4 + 2]) then
+        R0 = -1;
+        return;
+    endif;
+
+    [BUFFER_TABLE + BufferNumber * 4 + 2] = -1;
+
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == WAIT_BUFFER && [PROCESS_TABLE + R1 * 16 + 5] == BufferNumber) then
+            [PROCESS_TABLE + R1 * 16 + 4] = READY;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
+    
+
+
+// Acquire Disk
+if (functionNum == 3) then
+    while ([DISK_STATUS_TABLE] == 1) do
+        [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_DISK;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+    [DISK_STATUS_TABLE] = 1;
+    [DISK_STATUS_TABLE + 4] = currentPID;
+    return;
+endif;
+
+
+// Acquire Inode
+if (functionNum == 4) then
+    while ([FILE_STATUS_TABLE + R2 * 4] != -1) do
+        [PROCESS_TABLE + R3 * 16 + 4] = WAIT_FILE;
+        [PROCESS_TABLE + R3 * 16 + 5] = R2;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+
+    if ([INODE_TABLE + R2 * 16 + 1] == -1) then
+        R0 = -1;
+        return;
+    endif;
+
+    [FILE_STATUS_TABLE + R2 * 4] = R3;
+    R0 = 0;
+    return;
+endif;
+
+
+// Release Inode
+if (functionNum == 5) then
+    if (R3 != [FILE_STATUS_TABLE + R2 * 4]) then
+        R0 = -1;
+        return;
+    endif;
+
+    [FILE_STATUS_TABLE + R2 * 4] = -1;
+
+    R1 = 0;
+    while (R1 < 16) do
+        if ([PROCESS_TABLE + R1 * 16 + 4] == WAIT_FILE && [PROCESS_TABLE + R1 * 16 + 5] == R2) then
+            [PROCESS_TABLE + R1 * 16 + 4] = READY;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
+
+
+// Acquire Semaphore
+if (functionNum == 6) then
+    multipush(R4);
+    R4 = 0;
+    while (R4 < 32) do
+        if ([SEMAPHORE_TABLE + R4 * 4 + 1] == 0) then
+            break;
+        endif;
+        R4 = R4 + 1;
+    endwhile;
+
+    if (R4 == 32) then
+        R0 = -1;
+        multipop(R4);
+        return;
+    endif;
+
+    [SEMAPHORE_TABLE + R4 * 4 + 1] = 1;     // Processes using this Semaphore
+    [SEMAPHORE_TABLE + R4 * 4] = -1;        // Locking PID
+
+    R0 = R4;
+    multipop(R4);
+    return;
+endif;
+
+
+
+// Release Semaphore
+if (functionNum == 7) then
+    if ([SEMAPHORE_TABLE + R2 * 4] == R3) then
+        [SEMAPHORE_TABLE + R2 * 4] = -1;
+        multipush(R4);
+        R4 = 0;
+        while (R4 < 16) do
+            if ([PROCESS_TABLE + R4 * 16 + 4] == WAIT_SEMAPHORE && [PROCESS_TABLE + R4 * 16 + 5] == R2) then
+                [PROCESS_TABLE + R4 * 16 + 4] = READY;
+            endif;
+            R4 = R4 + 1;
+        endwhile;
+        multipop(R4);
+    endif;
+
+    [SEMAPHORE_TABLE + R3 * 4 + 1] = [SEMAPHORE_TABLE + R3 * 4 + 1] - 1;
+    R0 = 0;
+    return;
+endif;
+
+
+// Acquire Terminal	
+if (functionNum == 8) then
+    while ([TERMINAL_STATUS_TABLE] == 1) do
+        [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_TERMINAL;
+        backup;
+        call MOD_5;
+        restore;
+    endwhile;
+    // print "Aquiring Terminal";
+    [TERMINAL_STATUS_TABLE] = 1;
+    [TERMINAL_STATUS_TABLE + 1] = currentPID;
+    // breakpoint;
+    return;
+endif;
+
+
+
+// Release Terminal	
+if (functionNum == 9) then
+    multipush(R2,R3);
+    if (currentPID != [TERMINAL_STATUS_TABLE + 1]) then
+        R0 = -1;
+        multipop(R2,R3);
+        return;
+    endif;
+    [TERMINAL_STATUS_TABLE] = 0;
+    // print "Releasing Terminal";
+    temp = 0;
+    while (temp <= 15) do
+        if ([PROCESS_TABLE + temp * 16 + 4] == WAIT_TERMINAL) then
+            [PROCESS_TABLE + temp * 16 + 4] = READY;
+        endif;
+        temp = temp + 1;
+    endwhile;
+    R0 = 0;
+    multipop(R2,R3);
+    // breakpoint;
+    return;
+endif;
+
+R0 = -1;
+return;
+

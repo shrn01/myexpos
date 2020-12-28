@@ -1,14 +1,13 @@
 int main(){
 
 decl
-	int temp, uid, fd, fileowner;
-	str username, filename;
+	int temp, fd;
+	str username, filename, fileowner;
 enddecl
 
 begin
     temp = exposcall("Write",-2,"username");
 	temp = exposcall("Read", -1, username);
-    uid = exposcall("Getuid",username);
 
 	fd = exposcall("Open", "root");
 
@@ -19,9 +18,8 @@ begin
 		while(temp == 0) do
 			temp = exposcall("Seek", fd, 2);
 			temp = exposcall("Read", fd, fileowner);
-            
 
-			if(filename != "-1" AND fileowner == uid) then
+			if(filename != "-1" AND fileowner == username) then
 				temp = exposcall("Delete", filename);
 			endif;
 
