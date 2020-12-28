@@ -9,7 +9,9 @@ begin
 	fd = exposcall("Open",Name);
     while (a > -1 AND fd > -1) do
 	    a = exposcall("Read",fd,line);
-        temp = exposcall("Write",-2,line);
+		if (a > -1) then
+        	temp = exposcall("Write",-2,line);
+		endif;
     endwhile;
 	return 0;
 end

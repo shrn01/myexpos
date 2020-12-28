@@ -1,0 +1,22 @@
+int main(){
+decl
+	int a,fd,temp;
+    string Username,Password,line;
+enddecl
+begin
+    while (1 == 1) do
+        temp = exposcall("Write",-2,"Username >");
+        temp = exposcall("Read",-1,Username);
+        temp = exposcall("Write",-2,"Password >");
+        temp = exposcall("Read",-1,Password);
+        temp = exposcall("Login",Username,Password);
+        if (temp == -1) then
+            temp = exposcall("Write",-2,"Invalid");
+        endif;
+        if(temp == -2) then
+            temp = exposcall("Write",-2,"Un or Pw wrong");
+        endif;
+    endwhile;
+	return 0;
+end
+}

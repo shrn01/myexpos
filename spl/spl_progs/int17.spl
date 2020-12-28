@@ -1,0 +1,83 @@
+// int 17 with login
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+alias username R6;
+alias password R7;
+
+username = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+password = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+
+
+
+if ([SYSTEM_STATUS_TABLE + 1] != 1) then
+    [RETURN] = -2;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+    ireturn;
+endif;
+
+alias i R9;
+i = 0;
+
+while (i < 16) do
+    if ([USER_TABLE + i * 2] == username) then
+        break;
+    endif;
+    i = i + 1;
+endwhile;
+
+if (i == 16) then
+    [RETURN] = -1;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+    ireturn;
+endif;
+
+
+encrypt password;
+
+if ([USER_TABLE + i * 2 + 1] != password) then
+    [RETURN] = -1;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+    ireturn;
+endif;
+
+[PROCESS_TABLE + 2 * 16 + 2] = 1;
+[PROCESS_TABLE + 2 * 16 + 3] = i;
+[PROCESS_TABLE + 2 * 16 + 4] = CREATED;
+
+[PROCESS_TABLE + 1 * 16 + 4] = WAIT_PROCESS;
+[PROCESS_TABLE + 1 * 16 + 5] = 2;
+
+
+[SYSTEM_STATUS_TABLE] = i;
+
+backup;
+
+call MOD_5;
+restore;
+
+
+[RETURN] = 0;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+ireturn;

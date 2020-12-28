@@ -1,21 +1,6 @@
-76, 77 - init Stack
+76, 77 - user area page for idle and shell
 
-78, 79 - init heap
+78, 79 - shell stack
 
 80 - user area page for init kernel stack
 
-81 - idle process stack
-
-82 - user area page for idle kernel stack
-
-83 - executable prog
-
-84 - executable prog stack
-
-85 - executable prog kernel stack and user page area
-
-86 - prime program
-
-87 - prime user stack
-
-88 - prime kernal stack and user page area

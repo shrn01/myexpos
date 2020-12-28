@@ -1,0 +1,40 @@
+int main(){
+
+decl
+	int temp, uid, fd, fileowner;
+	str username, filename;
+enddecl
+
+begin
+    temp = exposcall("Write",-2,"username");
+	temp = exposcall("Read", -1, username);
+    uid = exposcall("Getuid",username);
+
+	fd = exposcall("Open", "root");
+
+	if(fd > -1 AND fd < 8) then
+		temp = exposcall("Seek", fd, 0);
+		temp = exposcall("Read", fd, filename);
+
+		while(temp == 0) do
+			temp = exposcall("Seek", fd, 2);
+			temp = exposcall("Read", fd, fileowner);
+            
+
+			if(filename != "-1" AND fileowner == uid) then
+				temp = exposcall("Delete", filename);
+			endif;
+
+			temp=  exposcall("Seek", fd, 4);
+			temp = exposcall("Read", fd, filename);
+		endwhile;
+		temp = exposcall("Close", fd);
+        temp = exposcall("Write",-2,"Deleted !");
+	else
+        temp = exposcall("Write",-2,"Error !");
+	endif;
+
+return 0;
+end
+
+}

@@ -1,6 +1,9 @@
 //loading init
 loadi(65,7);
-loadi(66,8);
+
+//loading shell
+loadi(67,9);
+loadi(68,10);
 
 //loading inode table to memory
 loadi(59,3);
@@ -64,6 +67,10 @@ loadi(23,36);
 loadi(24,37);
 loadi(25,38);
 
+//int 12 i.e. logout
+loadi(26,39);
+loadi(27,40);
+
 //int 13 with semaphores and stuff
 loadi(28,41);
 loadi(29,42);
@@ -75,6 +82,14 @@ loadi(31,44);
 //int 15 i.e. shutdown
 loadi(32,45);
 loadi(33,46);
+
+//int 16 i.e. user ones
+loadi(34,47);
+loadi(35,48);
+
+//int 17 i.e. login
+loadi(36,49);
+loadi(37,50);
 
 //module 0 (Resource Manager)
 loadi(40,53);
@@ -113,7 +128,8 @@ loadi(51,64);
 
 
 //setting wait mem count and mem free count
-[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE] = 0;
+[SYSTEM_STATUS_TABLE + 2] = 47;
 [SYSTEM_STATUS_TABLE + 3] = 0;
 
 
@@ -124,31 +140,17 @@ loadi(51,64);
 [DISK_STATUS_TABLE] = 0;
 
 
-
-// Setting all processes to TERMINATED
 alias index R0;
-index = 2;
-while ( index < 16 ) do
-	[PROCESS_TABLE + ( 16 * index ) + 4] = TERMINATED;
-	index = index + 1;
-endwhile;
-
-
 
 // Memory Free List
 index = 0;
 
-// used by expOS
-while ( index < 76) do
+// used by expOS, IDLE, INIT and shell
+while ( index < 81) do
 	[MEMORY_FREE_LIST + index] = 1;
 	index = index + 1;
 endwhile;
 
-//used by IDLE and INIT
-while (index < 83) do
-	[MEMORY_FREE_LIST + index] = 1;
-	index = index + 1;
-endwhile;
 
 while (index < 128) do
 	[MEMORY_FREE_LIST + index] = 0;
@@ -158,12 +160,18 @@ endwhile;
 
 
 
-// let's initialise the SEMAPHORE_TABLE
+// let's initialise the SEMAPHORE_TABLE and OPEN_FILE_TABLE
 
 index = 0;
 while (index < 32) do
-	[SEMAPHORE_TABLE + index * 4] = -1;
-	[SEMAPHORE_TABLE + index * 4 + 1] = 0;
+	R7 = SEMAPHORE_TABLE + index * 4;
+	[R7] = -1;
+	[R7 + 1] = 0;
+
+	R7 = OPEN_FILE_TABLE + index * 4;
+	[R7] = -1;
+	[R7 + 1] = -1;
+	[R7 + 2] = -1;
 	index = index + 1;
 endwhile;
 
@@ -184,21 +192,13 @@ endwhile;
 // Buffer Table
 index = 0;
 while (index < 4) do
-	[BUFFER_TABLE + index * 4] = -1;
-	[BUFFER_TABLE + index * 4 + 1] = 0;
-	[BUFFER_TABLE + index * 4 + 2] = -1;
+	R7 = BUFFER_TABLE + index * 4;
+	[R7] = -1;
+	[R7 + 1] = 0;
+	[R7 + 2] = -1;
 	index = index + 1;
 endwhile;
 
-
-// Open File Table
-index = 0;
-while(index < 32) do
-	[OPEN_FILE_TABLE + index * 4] = -1;
-	[OPEN_FILE_TABLE + index * 4 + 1] = -1;
-	[OPEN_FILE_TABLE + index * 4 + 2] = -1;
-	index = index + 1;
-endwhile;
 
 
 // Setting Page Tables
@@ -218,52 +218,121 @@ PTLR = 10;
 
 [PTBR+8] = 65;
 [PTBR+9] = "0100";
-[PTBR+10] = 66;
-[PTBR+11] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
 [PTBR+12] = -1;
 [PTBR+13] = "0000";
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
-[PTBR+16] = 76;
+[PTBR+16] = 66;
 [PTBR+17] = "0110";
-[PTBR+18] = 77;
-[PTBR+19] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
 
-[PROCESS_TABLE + 16 + 1] = 1;
-[PROCESS_TABLE + 16 + 4] = CREATED;
-[PROCESS_TABLE + 16 + 11] = 80;
-[PROCESS_TABLE + 16 + 12] = 0;
-[PROCESS_TABLE + 16 + 13] = 8*512;
-[PROCESS_TABLE + 16 + 14] = PAGE_TABLE_BASE + 20;
-[PROCESS_TABLE + 16 + 15] = 10;
+
+alias ProcessTable R2;
+ProcessTable = PROCESS_TABLE + 16;
+
+[ProcessTable + 1] = 1;
+[ProcessTable + 4] = CREATED;
+[ProcessTable + 11] = 80;
+[ProcessTable + 12] = 0;
+[ProcessTable + 13] = 8*512;
+[ProcessTable + 14] = PAGE_TABLE_BASE + 20;
+[ProcessTable + 15] = 10;
 
 
 //disk map entries for init process
-[DISK_MAP_TABLE + 10] = 13;
-[DISK_MAP_TABLE + 10 + 1] = 14;
-[DISK_MAP_TABLE + 10 + 2] = -1;
-[DISK_MAP_TABLE + 10 + 3] = -1;
-[DISK_MAP_TABLE + 10 + 4] = 7;
-[DISK_MAP_TABLE + 10 + 5] = 8;
-[DISK_MAP_TABLE + 10 + 6] = -1;
-[DISK_MAP_TABLE + 10 + 7] = -1;
-[DISK_MAP_TABLE + 10 + 8] = -1;
-[DISK_MAP_TABLE + 10 + 9] = -1;
+
+alias DiskMap R3;
+DiskMap = DISK_MAP_TABLE + 10;
+
+[DiskMap] = 13;
+[DiskMap + 1] = 14;
+[DiskMap + 2] = -1;
+[DiskMap + 3] = -1;
+[DiskMap + 4] = 7;
+[DiskMap + 5] = 8;
+[DiskMap + 6] = -1;
+[DiskMap + 7] = -1;
+[DiskMap + 8] = -1;
+[DiskMap + 9] = -1;
 
 
 
-// per process resource table for init
-index = 81 * 512 - 16;
-alias total R1;
-R1 = 81 * 512;
 
-while (index < R1) do
-	[index] = -1;
-	index = index + 1;
+// shell program
+PTBR = PAGE_TABLE_BASE + 40;
+PTLR = 10;
+
+[PTBR + 0] = 63;
+[PTBR + 1] = "0100";
+[PTBR + 2] = 64;
+[PTBR + 3] = "0100";
+
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
+
+[PTBR + 8] = 67;
+[PTBR + 9] = "0100";
+[PTBR + 10] = 68;
+[PTBR + 11] = "0100";
+[PTBR + 12] = -1;
+[PTBR + 13] = "0000";
+[PTBR + 14] = -1;
+[PTBR + 15] = "0000";
+
+[PTBR + 16] = 78;
+[PTBR + 17] = "0110";
+[PTBR + 18] = 79;
+[PTBR + 19] = "0110";
+
+
+
+ProcessTable = PROCESS_TABLE + 32;
+
+[ProcessTable + 1] = 2;
+[ProcessTable + 2] = 1;
+[ProcessTable + 4] = TERMINATED;
+[ProcessTable + 11] = 77;
+[ProcessTable + 12] = 0;
+[ProcessTable + 13] = 8 * 512;
+[ProcessTable + 14] = PAGE_TABLE_BASE + 40;
+[ProcessTable + 15] = 10;
+
+
+//disk map entries for shell process
+
+DiskMap = DISK_MAP_TABLE + 20;
+[DiskMap] = 13;
+[DiskMap + 1] = 14;
+[DiskMap + 2] = -1;
+[DiskMap + 3] = -1;
+[DiskMap + 4] = 9;
+[DiskMap + 5] = 10;
+[DiskMap + 6] = -1;
+[DiskMap + 7] = -1;
+[DiskMap + 8] = -1;
+[DiskMap + 9] = -1;
+
+
+//setting stack for shell
+[78 * 512] = [67 * 512 + 1];
+
+
+
+// per process resource table for shell
+index = 16;
+
+while (index > 0) do
+	[78 * 512 - index] = -1;
+	index = index - 1;
 endwhile;
 
 //setting stack for init
-[76 * 512] = [65*512 + 1];
+[66 * 512] = [65 * 512 + 1];
 
 return;

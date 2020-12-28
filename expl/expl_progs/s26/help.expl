@@ -1,0 +1,21 @@
+int main()
+{
+decl
+    int temp, pid, a, flag;
+    string input, username, password;
+enddecl
+
+begin
+    temp = exposcall("Write",-2,"Avlbl cmds");
+    temp = exposcall("Write",-2,"--------");
+    temp = exposcall("Write",-2,"logout");
+    temp = exposcall("Write",-2,"getuid");
+    temp = exposcall("Write",-2,"remusr");
+    temp = exposcall("Write",-2,"getuname");
+    temp = exposcall("Write",-2,"getuid");
+    temp = exposcall("Write",-2,"setpwd");
+    temp = exposcall("Write",-2,"shutdown");
+    temp = exposcall("Write",-2,"--------");      
+    return 0;
+end
+}

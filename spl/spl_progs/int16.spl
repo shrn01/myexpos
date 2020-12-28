@@ -1,0 +1,222 @@
+// int 16 with user things
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+alias arg2 R6;
+alias arg3 R7;
+
+arg2 = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+arg3 = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+
+alias ProcessTable R8;
+alias currentPID R10;
+
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+ProcessTable = PROCESS_TABLE + currentPID * 16;
+
+
+// newuser
+if (system_call_number == 22) then
+    alias username R6;
+    alias password R7;
+
+    if (currentPID != 1 && currentPID != 2) then
+        [RETURN] = -2;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+    alias i R9;
+    i = 0;
+
+    while (i < 16) do
+        if ([USER_TABLE + i * 2] == username) then
+            [RETURN] = -1;
+            [ProcessTable + 9] = 0;
+            SP = [ProcessTable + 13];
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    i = 0;
+    while (i < 16) do
+        if ([USER_TABLE + i * 2] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 16) then
+        [RETURN] = -3;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+    encrypt password;
+
+    [USER_TABLE + i * 2] = username;
+    [USER_TABLE + i * 2 + 1] = password;
+
+    [RETURN] = 0;
+    [ProcessTable + 9] = 0;
+    SP = [ProcessTable + 13];
+    ireturn;
+endif;
+
+
+// remuser
+if (system_call_number == 23) then
+    alias username R6;
+
+    if ((currentPID != 1 && currentPID != 2) || (username == "root" || username == "kernel")) then
+        [RETURN] = -2;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+
+    alias i R9;
+    i = 0;
+
+    while (i < 16) do
+        if ([USER_TABLE + i * 2] == username) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 16) then
+        [RETURN] = -1;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+    multipush(R9);
+    i = 0;
+
+    while (i < 60) do
+        if ([ROOT_FILE + i * 8] != -1 && [ROOT_FILE + i * 8 + 3] == username) then
+            [RETURN] = -3;
+            [ProcessTable + 9] = 0;
+            SP = [ProcessTable + 13];
+            ireturn; 
+        endif;
+        i = i + 1;
+    endwhile;
+    multipop(R9);
+
+    [USER_TABLE + i * 2] = -1;
+    [USER_TABLE + i * 2 + 1] = -1;
+
+    [RETURN] = 0;
+    [ProcessTable + 9] = 0;
+    SP = [ProcessTable + 13];
+    ireturn;
+endif;
+
+
+//changepwd
+if (system_call_number == 24) then
+    alias username R6;
+    alias newpwd R7;
+    
+    alias i R9;
+    i = 0;
+
+    while (i < 16) do
+        if ([USER_TABLE + i * 2] == username) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 16) then
+        [RETURN] = -2;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+    if (([ProcessTable + 3] != i || [ProcessTable + 3] != 1) || (currentPID != 1 && currentPID != 2)) then
+        [RETURN] = -1;
+        [ProcessTable + 9] = 0;
+        SP = [ProcessTable + 13];
+        ireturn;
+    endif;
+
+    encrypt newpwd;
+    [USER_TABLE + i * 2 + 1] = newpwd;
+
+    [RETURN] = 0;
+    [ProcessTable + 9] = 0;
+    SP = [ProcessTable + 13];
+    ireturn;
+endif;
+
+
+// get username
+if (system_call_number == 25) then
+    alias userid R6;
+
+    if (userid > -1 || userid < 16) then
+        if ([USER_TABLE + userid * 2] != -1) then
+            [RETURN] = [USER_TABLE + userid * 2];
+            [ProcessTable + 9] = 0;
+            SP = [ProcessTable + 13];
+            ireturn;
+        endif;
+    endif;
+
+    [RETURN] = -1;
+    [ProcessTable + 9] = 0;
+    SP = [ProcessTable + 13];
+    ireturn;
+endif;
+
+
+
+//get userid
+if (system_call_number == 26) then
+    alias username R6;
+
+    alias i R9;
+    i = 0;
+
+    while (i < 16) do
+        if ([USER_TABLE + i * 2] == username) then
+            [RETURN] = i;
+            [ProcessTable + 9] = 0;
+            SP = [ProcessTable + 13];
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    [RETURN] = -1;
+    [ProcessTable + 9] = 0;
+    SP = [ProcessTable + 13];
+    ireturn;
+endif;
+

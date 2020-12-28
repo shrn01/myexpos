@@ -153,8 +153,6 @@ endif;
 // KILL ALL
 if (funcNum == 5) then
     alias i R4;
-    alias pid R5;
-    pid = [SYSTEM_STATUS_TABLE + 1];
 
     i = 0;
     while (i < 60) do

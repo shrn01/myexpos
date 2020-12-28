@@ -1,0 +1,30 @@
+int main(){
+decl
+	int a,fd,fd1,temp;
+    string Name,Name1,line,text;
+enddecl
+begin
+	temp = exposcall("Write",-2,"OldFile");
+	temp = exposcall("Read",-1,Name);
+	temp = exposcall("Write",-2,"NewFile");
+	temp = exposcall("Read",-1,Name1);
+	temp = exposcall("Write",-2,"Permission");
+	temp = exposcall("Read",-1,a);
+    temp = exposcall("Create",Name1,a);
+	fd1 = exposcall("Open",Name1);
+	fd = exposcall("Open",Name);
+
+    while (a > -1 AND fd > -1) do
+	    a = exposcall("Read",fd,line);
+        if (a > -1) then
+            temp = exposcall("Write",fd1,line);
+        endif;
+    endwhile;
+
+
+	temp = exposcall("Close",fd);
+	temp = exposcall("Close",fd1);
+	temp = exposcall("Write",-2,"Saved");
+	return 0;
+end
+}

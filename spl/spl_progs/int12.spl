@@ -1,0 +1,58 @@
+// int 12 with logout
+
+
+alias userSP R5;
+userSP = SP;
+
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1] * 16 + 11] * 512 - 1;
+
+
+
+alias system_call_number R4;
+
+system_call_number = [[PTBR + 2 * ((userSP - 5) / 512)] * 512 + (userSP - 5) % 512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = system_call_number;
+
+
+alias RETURN R2;
+RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
+
+
+if ([SYSTEM_STATUS_TABLE + 1] != 2) then
+    [RETURN] = -1;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+    ireturn;
+endif;
+
+backup;
+R1 = 5;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+
+call MOD_1;
+restore;
+
+[PROCESS_TABLE + 2 * 16 + 4] = TERMINATED;
+
+
+
+//setting stack for shell program
+[78 * 512] = [67 * 512 + 1];
+
+
+[PROCESS_TABLE + 1 * 16 + 4] = READY;
+
+
+[SYSTEM_STATUS_TABLE] = 0;
+backup;
+
+call MOD_5;
+restore;
+
+
+[RETURN] = 0;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+ireturn;

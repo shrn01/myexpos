@@ -13,7 +13,9 @@ RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = 21;
 
-if ([SYSTEM_STATUS_TABLE + 1] != 1) then
+
+// check if the invoking process is shell pid == 2
+if ([SYSTEM_STATUS_TABLE + 1] != 2) then
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9 ] = 0;
     [RETURN] = -1;
     SP = userSP;

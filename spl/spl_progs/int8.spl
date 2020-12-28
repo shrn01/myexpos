@@ -169,10 +169,12 @@ while (R1 < 512) do
 endwhile;
 
 R1 = 0;
-while (R1 < 512) do
-    [[ptbr_child + 18] * 512 + R1] = [[PTBR + 18] * 512 + R1];
-    R1 = R1 + 1;
-endwhile;
+if ([PTBR + 18] != -1) then
+    while (R1 < 512) do
+        [[ptbr_child + 18] * 512 + R1] = [[PTBR + 18] * 512 + R1];
+        R1 = R1 + 1;
+    endwhile;
+endif;
 multipop(R1);
 
 [[PROCESS_TABLE + childPID * 16 + 11] * 512] = BP;

@@ -21,7 +21,7 @@ RETURN = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
 
 alias i R6;
 
-
+// create 
 if (system_call_number == 1) then
     alias FileName R7;
     alias Permission R3;
@@ -89,6 +89,8 @@ if (system_call_number == 1) then
     ireturn;
 endif;
 
+
+// delete
 if (system_call_number == 4) then
     alias FileName R7;
     alias process_table R4;

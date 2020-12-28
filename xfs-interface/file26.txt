@@ -1,0 +1,29 @@
+load --os $HOME/myexpos/spl/spl_progs/s15/os_start.xsm
+load --int=timer $HOME/myexpos/spl/spl_progs/s15/timerint.xsm
+load --int=disk $HOME/myexpos/spl/spl_progs/diskint.xsm
+load --int=console $HOME/myexpos/spl/spl_progs/s15/consoleint.xsm
+load --int=4 $HOME/myexpos/spl/spl_progs/int4.xsm
+load --int=5 $HOME/myexpos/spl/spl_progs/int5.xsm
+load --int=6 $HOME/myexpos/spl/spl_progs/s15/int6.xsm
+load --int=7 $HOME/myexpos/spl/spl_progs/s15/int7.xsm
+load --int=8 $HOME/myexpos/spl/spl_progs/int8.xsm
+load --int=9 $HOME/myexpos/spl/spl_progs/int9.xsm
+load --int=10 $HOME/myexpos/spl/spl_progs/s15/int10.xsm
+load --int=11 $HOME/myexpos/spl/spl_progs/int11.xsm
+load --int=12 $HOME/myexpos/spl/spl_progs/int12.xsm
+load --int=13 $HOME/myexpos/spl/spl_progs/int13.xsm
+load --int=14 $HOME/myexpos/spl/spl_progs/int14.xsm
+load --int=15 $HOME/myexpos/spl/spl_progs/int15.xsm
+load --int=16 $HOME/myexpos/spl/spl_progs/int16.xsm
+load --int=17 $HOME/myexpos/spl/spl_progs/int17.xsm
+load --module 0 $HOME/myexpos/spl/spl_progs/s15/mod0.xsm
+load --module 1 $HOME/myexpos/spl/spl_progs/mod1.xsm
+load --module 2 $HOME/myexpos/spl/spl_progs/mod2.xsm
+load --module 3 $HOME/myexpos/spl/spl_progs/mod3.xsm
+load --module 4 $HOME/myexpos/spl/spl_progs/s15/mod4.xsm
+load --module 5 $HOME/myexpos/spl/spl_progs/s15/scheduler.xsm
+load --module 7 $HOME/myexpos/spl/spl_progs/s15/boot_mod.xsm
+load --init $HOME/myexpos/expl/expl_progs/s26/login.xsm
+load --idle $HOME/myexpos/expl/expl_progs/s16/idle.xsm
+load --shell $HOME/myexpos/expl/expl_progs/s26/xshell.xsm
+load --exhandler $HOME/myexpos/spl/spl_progs/exception_handler.xsm
