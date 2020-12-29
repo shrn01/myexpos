@@ -1,4 +1,4 @@
-# oslab
+# OS lab NIT Calicut ( *ExpOS* )
 
-Roadmap on exposnitc.github.io
+[Click Here for ExpOS website](https://exposnitc.github.io/)
 
