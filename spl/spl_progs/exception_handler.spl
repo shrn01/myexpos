@@ -20,21 +20,21 @@ multipush(EIP);
 
 if (EC != 0) then
     if (EC == 1) then
-        print "ILLEGAL ---";
-        print "INSTRUCTION";
+        print "--ILLEGAL--";
+        print "--INSTRUC--";
         print EIP;
         print " ";
         breakpoint;
     endif;
     if (EC == 2) then
-        print "ILLEGAL ---";
-        print "MEM ACCESS";
+        print "--ILLEGAL--";
+        print "--MEM ACS--";
         print EMA;
         print " ";
         breakpoint;
     endif;
     if (EC == 3) then
-        print "DIVIDE BY 0";
+        print "DVIDE / 0";
         print " ";
         breakpoint;
     endif;
@@ -46,8 +46,8 @@ if (EC != 0) then
 endif;
 
 if (SP == 10 * 512 - 1) then
-    print "STACK IS";
-    print "--FULL--";
+    print "--STACK--";
+    print "---FULL---";
     breakpoint;
     R1 = 3;
     R2 = [SYSTEM_STATUS_TABLE + 1];
@@ -56,10 +56,6 @@ if (SP == 10 * 512 - 1) then
 endif;
 
 if (EC == 0) then
-    // print "PAGE FAULT";
-    // print EPN;
-    // print "FIXING IT";
-    // print " ";
     alias block R5;
     block = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + EPN];
     if (EPN == 4 || EPN == 5 || EPN == 6 || EPN == 7) then

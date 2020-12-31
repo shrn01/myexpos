@@ -82,7 +82,7 @@ if (funcNum == 5) then
     alias index_2 R6;
     index = 0;
 
-    while (index < 10) do
+    while (index < 16) do
         disk_map = DISK_MAP_TABLE + index * 10;
         index_2 = 4;
         while (index_2 < 8) do
@@ -113,6 +113,24 @@ if (funcNum == 5) then
     return;
 
 endif;
-    
+
+
+// Get swap block
+if (funcNum == 6) then
+    R1 = DISK_SWAP_AREA + DISK_FREE_LIST;
+    R2 = DISK_FREE_LIST + DISK_SIZE;
+    while (R1 < R2) do
+        if ([R1] == 0) then
+            R0 = R1 - DISK_FREE_LIST;
+            [R1] = 1;
+            return;
+        endif;
+        R1 = R1 + 1;
+    endwhile;
+    R0 = -1;
+    return;
+endif;
+
+
 R0 = -1;
 return;

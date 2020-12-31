@@ -17,30 +17,29 @@ alias temp R2;
 
 temp = pid + 1;
 
-while (temp <= 15) do
-	if ([PROCESS_TABLE + temp * 16 + 4] == CREATED || [PROCESS_TABLE + temp * 16 + 4] == READY) then
-		newpid = temp;
-		break;
+
+// Checking for paging status and scheduling accordingly
+
+if ([SYSTEM_STATUS_TABLE + 5] != 0) then
+	if ([PROCESS_TABLE + 15 * 16 + 4] != CREATED || [PROCESS_TABLE + 15 * 16 + 4] != READY) then
+		newpid = 0;
+	else
+		newpid = 15;
 	endif;
-	temp = temp + 1;
-endwhile;
-
-if (temp == 16) then 
-	newpid = 0;
-endif;
-
-if (newpid == 0) then
-	temp = 1;
-	while (temp <= 15) do
-		if ([PROCESS_TABLE + temp * 16 + 4] != TERMINATED) then
+else
+	while (temp < 15) do
+		if (([PROCESS_TABLE + temp * 16 + 4] == CREATED || [PROCESS_TABLE + temp * 16 + 4] == READY) && [PROCESS_TABLE + temp * 16 + 6] != 1) then
+			newpid = temp;
 			break;
 		endif;
 		temp = temp + 1;
 	endwhile;
-	if (temp == 16) then 
-		call INT_10;
+
+	if (temp == 15) then 
+		newpid = 0;
 	endif;
 endif;
+
 
 
 // breakpoint;

@@ -111,10 +111,13 @@ loadi(47,60);
 loadi(48,61);
 loadi(49,62);
 
-
 //module 5 ( scheduler )
 loadi(50,63);
 loadi(51,64);
+
+//module 6 ( Page Swapper )
+loadi(52,65);
+loadi(53,66);
 
 
 
@@ -129,8 +132,10 @@ loadi(51,64);
 
 //setting wait mem count and mem free count
 [SYSTEM_STATUS_TABLE] = 0;
-[SYSTEM_STATUS_TABLE + 2] = 47;
+[SYSTEM_STATUS_TABLE + 2] = 45;
 [SYSTEM_STATUS_TABLE + 3] = 0;
+[SYSTEM_STATUS_TABLE + 4] = 0;
+[SYSTEM_STATUS_TABLE + 5] = 0;
 
 
 
@@ -146,7 +151,7 @@ alias index R0;
 index = 0;
 
 // used by expOS, IDLE, INIT and shell
-while ( index < 81) do
+while ( index < 83) do
 	[MEMORY_FREE_LIST + index] = 1;
 	index = index + 1;
 endwhile;

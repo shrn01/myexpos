@@ -11,6 +11,7 @@ loadi(55,68);
 alias index R0;
 index = 0;
 while ( index < 16 ) do
+	[PROCESS_TABLE + ( 16 * index )] = 0;
 	[PROCESS_TABLE + ( 16 * index ) + 4] = TERMINATED;
 	index = index + 1;
 endwhile;
@@ -20,7 +21,9 @@ endwhile;
 SP = 76 * 512 - 1;
 call BOOT_MODULE;
 
+[PROCESS_TABLE] = 0;
 [PROCESS_TABLE + 1] = 0;
+[PROCESS_TABLE + 3] = 0;
 [PROCESS_TABLE + 4] = RUNNING;
 [PROCESS_TABLE + 11] = 76;
 [PROCESS_TABLE + 12] = 0;
@@ -30,36 +33,65 @@ call BOOT_MODULE;
 
 //idle
 PTBR = PAGE_TABLE_BASE;
-[PTBR+0] = 63;
-[PTBR+1] = "0100";
-[PTBR+2] = 64;
-[PTBR+3] = "0100";
+[PTBR + 0] = 63;
+[PTBR + 1] = "0100";
+[PTBR + 2] = 64;
+[PTBR + 3] = "0100";
 
-[PTBR+4] = -1;
-[PTBR+5] = "0000";
-[PTBR+6] = -1;
-[PTBR+7] = "0000";
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
 
-[PTBR+8] = 69;
-[PTBR+9] = "0100";
-[PTBR+10] = -1;
-[PTBR+11] = "0000";
-[PTBR+12] = -1;
-[PTBR+13] = "0000";
-[PTBR+14] = -1;
-[PTBR+15] = "0000";
+[PTBR + 8] = 69;
+[PTBR + 9] = "0100";
+[PTBR + 10] = -1;
+[PTBR + 11] = "0000";
+[PTBR + 12] = -1;
+[PTBR + 13] = "0000";
+[PTBR + 14] = -1;
+[PTBR + 15] = "0000";
 
-[PTBR+16] = 70;
-[PTBR+17] = "0110";
-[PTBR+18] = -1;
-[PTBR+19] = "0000";
+[PTBR + 16] = 70;
+[PTBR + 17] = "0110";
+[PTBR + 18] = -1;
+[PTBR + 19] = "0000";
 
 
-[70 * 512] = [69*512 + 1];
+[70 * 512] = [69 * 512 + 1];
 
-SP = 8*512;
+
+// swapper
+
+alias ptbr R2;
+alias Process_table R3;
+ptbr = PAGE_TABLE_BASE + 15 * 20;
+Process_table = PROCESS_TABLE + 15 * 16;
+
+index = 0;
+while (index < 16) do
+	[ptbr + index] = [PTBR + index];
+	[Process_table + index] = [PROCESS_TABLE + index];
+	index = index + 1;
+endwhile;
+
+[ptbr + 16] = 81;
+[ptbr + 17] = "0110";
+[ptbr + 18] = -1;
+[ptbr + 19] = "0000";
+
+
+[Process_table + 1] = 15;
+[Process_table + 4] = CREATED;
+[Process_table + 11] = 82;
+
+[81 * 512] = [69 * 512 + 1];
+
+SP = 8 * 512;
 
 [SYSTEM_STATUS_TABLE + 1] = 0;
+
+[MEMORY_FREE_LIST + 69] = 2;
 
 breakpoint;
 ireturn;

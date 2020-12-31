@@ -4,7 +4,8 @@ int main()
 		int a;
 	enddecl
 	begin
-		while (1 == 1) do
+		a = 1;
+		while (a == 1) do
 			a = 1;
 		endwhile;
 		return 0;

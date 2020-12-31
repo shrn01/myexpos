@@ -85,7 +85,7 @@ call MOD_2;
 alias Child_Process_Table R3;
 Child_Process_Table = PROCESS_TABLE + childPID * 16;
 
-[Child_Process_Table + 0] = 0;
+[Child_Process_Table] = 0;
 [Child_Process_Table + 1] = childPID;
 [Child_Process_Table + 2] = currentPID;
 [Child_Process_Table + 3] = [currentProcessTable + 3];
@@ -143,7 +143,7 @@ endwhile;
 multipop(R1);
 
 
-[ptbr_child + 0] = 63;
+[ptbr_child] = 63;
 [ptbr_child + 1] = "0100";
 [ptbr_child + 2] = 64;
 [ptbr_child + 3] = "0100";

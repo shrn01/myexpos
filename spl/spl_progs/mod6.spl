@@ -1,0 +1,217 @@
+// Pager Module
+
+alias pid R2;
+
+
+// swap out to disk
+if (R1 == 1) then
+    // choose a process to swap
+    alias i R3;
+    alias pt R4;
+
+    i = 3;
+    while (i < 15) do
+        pt = PROCESS_TABLE + i * 16;
+        if ([pt + 4] == WAIT_PROCESS && [pt + 6] == 0) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 15) then
+        i = 3;
+        while (i < 15) do
+            pt = PROCESS_TABLE + i * 16;
+            if ([pt + 4] == WAIT_SEMAPHORE && [pt + 6] == 0) then
+                break;
+            endif;
+            i = i + 1;
+        endwhile;
+    endif;
+
+    alias maxtick R5;
+    alias j R6;
+    if (i == 15) then
+        j = 3;
+        maxtick = -1;
+        while (j < 15) do
+            pt = PROCESS_TABLE + j * 16;
+            if ([pt] > maxtick && [pt + 6] == 0 && [pt + 4] != RUNNING && [pt + 4] != TERMINATED && [pt + 4] != ALLOCATED) then
+                maxtick = [pt];
+                i = j;
+            endif;
+            j = j + 1;
+        endwhile;
+        pt = PROCESS_TABLE + i * 16;
+    endif;
+
+    if (i == 15) then
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        R0 = -1;
+        return;
+    endif;
+
+    [pt] = 0;
+
+    alias ptbr R7;
+    alias k R8;
+    ptbr = PAGE_TABLE_BASE + i * 20;
+
+    j = 2;
+    while (j < 9) do
+        k = ptbr + j * 2;
+        if ([k] != -1) then
+            if (j < 4 || j > 7) then
+                if ([MEMORY_FREE_LIST + [k]] == 1) then
+
+                    // GET SWAP BLOCK
+                    multipush(R1,R2,R3);
+                    R1 = 6;
+
+                    call MOD_2;
+                    multipop(R1,R2,R3);
+
+
+                    // UPDATE DISK MAP TABLE
+                    [DISK_MAP_TABLE + i * 10 + j] = R0;
+
+                    // CALL DISK STORE
+                    multipush(R1,R2,R3,R4);
+                    R1 = 1;
+                    R2 = 15;
+                    R3 = [k];
+                    R4 = R0;
+
+                    call MOD_4;
+
+                    multipop(R1,R2,R3,R4);
+
+
+                    // CALL RELEASE PAGE
+                    multipush(R1,R2,R3);
+                    R1 = 2;
+                    R2 = [k];
+
+                    call MOD_2;
+                    multipop(R1,R2,R3);
+
+
+                    [k] = -1;
+                    [k + 1] = "0000";
+                endif;
+            else
+                // CALL RELEASE PAGE
+                
+                multipush(R1,R2,R3);
+                R1 = 2;
+                R2 = [k];
+
+                call MOD_2;
+                multipop(R1,R2,R3);
+                [k] = -1;
+                [k + 1] = "0000";
+            endif;
+        endif;
+        j = j + 1;
+    endwhile;
+
+    [pt + 6] = 1;
+
+    R9 = SYSTEM_STATUS_TABLE + 4;
+
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+    [R9] = [R9] + 1;
+    R0 = 0;
+    return;
+endif;
+
+
+// swap in to memory 
+if (R1 == 2) then
+    alias i R3;
+    alias pt R4;
+
+    i = 15;
+    alias maxtick R5;
+    alias j R6;
+
+    j = 3;
+    maxtick = -1;
+    while (j < 15) do
+        pt = PROCESS_TABLE + j * 16;
+        if ([pt + 4] == READY && [pt + 6] == 1 && [pt] > maxtick) then
+            maxtick = [pt];
+            i = j;
+        endif;
+        j = j + 1;
+    endwhile;
+    pt = PROCESS_TABLE + i * 16;
+
+    if (i == 15) then
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        R0 = -1;
+        return;
+    endif;
+
+    [pt] = 0;
+
+    alias ptbr R7;
+    alias k R8;
+    ptbr = PAGE_TABLE_BASE + i * 20;
+    j = 2;
+    while (j < 9) do
+        k = ptbr + j * 2;
+        R9 = DISK_MAP_TABLE + i * 16 + j;
+        if ([k] == -1 && (j < 4 || j > 7) && [R9] != -1) then
+            // GET FREE PAGE
+            multipush(R1,R2,R3);
+            R1 = 1;
+
+            call MOD_2;
+            multipop(R1,R2,R3);
+
+            // DISK LOAD
+            multipush(R0,R1,R2,R3,R4);
+            R1 = 1;
+            R2 = 15;
+            R3 = R0;
+            R4 = [R9];
+
+            call MOD_4;
+            multipop(R0,R1,R2,R3,R4);
+
+            // UPDATE DiskMap
+            [R9] = -1;
+
+            // CALL RELEASE BLOCK
+            multipush(R0,R1,R2,R3,R4);
+            R1 = 4;
+            R2 = R0;
+            R3 = 15;
+
+            call MOD_2;
+            multipop(R0,R1,R2,R3,R4);
+
+            [k] = R0;
+            [k + 1] = "0110";
+        endif;
+        j = j + 1;
+    endwhile;
+
+    [pt + 6] = 0;
+
+    R9 = SYSTEM_STATUS_TABLE + 4;
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+    [R9] = [R9] - 1;
+    R0 = 0;
+    return;
+endif;
+
+
+
+
+
+
+
+
+
