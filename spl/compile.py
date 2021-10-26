@@ -1,9 +1,19 @@
+#!/usr/bin/env python3
+
 import os
 
-l = os.listdir(os.getcwd() + '/spl_progs')
-for i in l:
-    if '.spl' in i:
-        print('./spl '+ os.getcwd() +'/spl_progs/'+ i)
-        os.system('./spl '+ os.getcwd() +'/spl_progs/'+ i)
+# get all immediate subdirectories of /sql_progs directory
+dir = [ '/' + x for x in next(os.walk(os.getcwd() + '/spl_progs'))[1]]  
 
-print("finish")
+# add /sql_progs directory
+dir.append('')
+
+for i in dir:
+    print('\nin directory ' + os.getcwd() + '/spl_progs' + i)
+    l = os.listdir(os.getcwd() + '/spl_progs' + i)
+    for k in l:
+        if '.spl' in k:
+            print('\tcompiling '+ os.getcwd() + '/spl_progs'+ i + '/' + k)
+            os.system('./spl '+ os.getcwd() + '/spl_progs'+ i + '/' + k)
+
+print("finished compiling")
